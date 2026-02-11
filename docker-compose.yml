@@ -1,0 +1,19 @@
+services:
+  mimf:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Example: API key mapping (replace in production)
+      # Format: <APIKEY>:<ACTOR_ID>:<cap1,cap2>;...
+      - MIMF_API_KEYS=devkey:alice:export:document.basic,export:document.identifying,export:document.tooling,runtime:read,runtime:write
+      - MIMF_REQUIRE_AUTH=1
+      - MIMF_DB_PATH=/data/mimf_runtime.db
+      - MIMF_MAX_UPLOAD_BYTES=26214400
+      - MIMF_RATE_LIMIT_RPM=120
+      - MIMF_RATE_LIMIT_BURST=120
+    volumes:
+      - mimf_data:/data
+
+volumes:
+  mimf_data:

@@ -1,0 +1,60 @@
+{
+  "export_policy": {
+    "missing_capabilities": [],
+    "policy_id": "normalized-export-fields",
+    "reason": "Export allowed",
+    "redacted_fields": [],
+    "status": "ALLOW",
+    "trace_id": "export-1769643192"
+  },
+  "extraction": {
+    "document": {
+      "author": null,
+      "content_type": "application/json",
+      "created": null,
+      "creator": null,
+      "format": "json",
+      "keywords": null,
+      "modified": null,
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "normalizer_id": "json",
+    "schema_version": "mimf.document@1.0",
+    "signals": {
+      "note": null,
+      "parsed": true,
+      "top_level_keys": 4,
+      "top_level_length": null,
+      "top_level_type": "dict"
+    },
+    "sources_count": null
+  },
+  "input": {
+    "absolute_path": null,
+    "extension": ".json",
+    "filename": "demo.json",
+    "mime_confidence": "medium",
+    "mime_type": "application/json",
+    "sha256": "76b3b95d0aef1bbfce285c09b25be631d415a0eae3db28f73cca19ae9b5a6bfc",
+    "size_bytes": 85,
+    "stat": {
+      "ctime": null,
+      "mtime": null
+    }
+  },
+  "inspection": {
+    "inspector_plugin_id": "builtin.json_inspector",
+    "labels": [
+      "UNTRUSTED"
+    ],
+    "object_id": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)/demo.json",
+    "object_type": "file",
+    "signals": {}
+  },
+  "schema": {
+    "name": "mimf.file_summary",
+    "version": "1.0"
+  }
+}

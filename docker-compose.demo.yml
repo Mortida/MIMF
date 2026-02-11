@@ -1,0 +1,10 @@
+services:
+  mimf:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - MIMF_API_KEYS=devkey:alice:export:document.basic,export:document.identifying,export:document.tooling,runtime:read,runtime:write
+      - MIMF_RATE_LIMIT_RPM=240
+      - MIMF_RATE_LIMIT_BURST=60
+      - MIMF_MAX_UPLOAD_BYTES=26214400

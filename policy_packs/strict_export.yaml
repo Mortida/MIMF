@@ -1,0 +1,5 @@
+# Strict export: deny export when missing capabilities (fail closed)
+export_policy:
+  mode: deny
+  allow_capabilities:
+    - export:document.basic

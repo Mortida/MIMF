@@ -1,0 +1,5 @@
+# Default (safe) policy pack
+export_policy:
+  mode: redact   # redact | deny | allow
+  allow_capabilities:
+    - export:document.basic

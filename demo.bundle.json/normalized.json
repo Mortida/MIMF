@@ -1,0 +1,40 @@
+{
+  "export_policy": {
+    "metadata": {
+      "missing_capabilities": [],
+      "redact_fields": []
+    },
+    "policy_id": "normalized-export-fields",
+    "reason": "Export allowed",
+    "status": "ALLOW",
+    "trace_id": "export-1769643192"
+  },
+  "normalized": {
+    "document": {
+      "author": null,
+      "content_type": "application/json",
+      "created": null,
+      "creator": null,
+      "format": "json",
+      "keywords": null,
+      "modified": null,
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "schema": {
+      "name": "mimf.document",
+      "version": "1.0"
+    },
+    "signals": {
+      "note": null,
+      "parsed": true,
+      "top_level_keys": 4,
+      "top_level_length": null,
+      "top_level_type": "dict"
+    }
+  },
+  "normalizer_id": "json",
+  "redacted_fields": [],
+  "schema_version": "mimf.document@1.0"
+}

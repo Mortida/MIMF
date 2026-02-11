@@ -1,0 +1,7 @@
+# Internal forensic use (allows identifying + tooling fields)
+export_policy:
+  mode: allow
+  allow_capabilities:
+    - export:document.basic
+    - export:document.identifying
+    - export:document.tooling

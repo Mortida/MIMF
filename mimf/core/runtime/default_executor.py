@@ -19,7 +19,7 @@ class DefaultMutationExecutor(MutationExecutor):
     - Emits MutationExecutionEvent records for audit and forensics.
     - Registers the new object in RuntimeContext.
     """
-
+    # context.add_object(new_obj)
     executor_name = "default"
 
     def _apply(self, plan: MutationPlan, obj: RuntimeObject) -> RuntimeObject:
@@ -73,7 +73,7 @@ class DefaultMutationExecutor(MutationExecutor):
         )
 
         new_obj = self._apply(plan, obj)
-        context.add_object(new_obj)
+        context.upsert_object(new_obj)
 
         context.emit_event(
             MutationExecutionEvent(

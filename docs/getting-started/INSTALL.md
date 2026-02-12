@@ -1,13 +1,15 @@
-cat > docs/getting-started/INSTALL.md <<'EOF'
-# Install (MIMF v1)
+# Install MIMF (v1.0.0)
+
+This project is managed with `uv` for consistent environments.
 
 ## Prerequisites
-
 - Linux/macOS recommended
 - Python 3.12+
-- `uv` installed
+- `uv`
 
-Verify:
+Check:
 ```bash
 python3 -V
 uv --version
+
+

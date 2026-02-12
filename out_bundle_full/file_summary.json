@@ -1,0 +1,93 @@
+{
+  "export_policy": {
+    "missing_capabilities": [
+      "export:document.identifying",
+      "export:document.tooling"
+    ],
+    "policy_id": "normalized-export-fields",
+    "reason": "Redact sensitive fields for export",
+    "redacted_fields": [
+      "author",
+      "creator",
+      "keywords",
+      "producer",
+      "subject",
+      "title"
+    ],
+    "status": "ALLOW",
+    "trace_id": "export-1770933133"
+  },
+  "extraction": {
+    "document": {
+      "author": null,
+      "content_type": "application/pdf",
+      "created": "D:20260212203539+00'00'",
+      "created_iso": "2026-02-12T20:35:39+00:00",
+      "creator": null,
+      "format": "pdf",
+      "keywords": null,
+      "modified": "D:20260212203539+00'00'",
+      "modified_iso": "2026-02-12T20:35:39+00:00",
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "normalizer_id": "pdf",
+    "schema_version": "mimf.document@1.0",
+    "signals": {
+      "xmp_creators_count": 0,
+      "xmp_fields_present": false,
+      "xmp_present": false,
+      "xmp_sha256": null
+    },
+    "sources_count": null
+  },
+  "input": {
+    "absolute_path": null,
+    "extension": ".pdf",
+    "filename": "sample.pdf",
+    "mime_confidence": "high",
+    "mime_type": "application/pdf",
+    "sha256": "2e5c064f8231ea40294d42caa7679d53e22df4c83b3e71d6ff51f844f96fc40f",
+    "size_bytes": 2593,
+    "stat": {
+      "ctime": "2026-02-12 20:36:16.842553+00:00",
+      "mtime": "2026-02-12 20:35:55.676329+00:00"
+    }
+  },
+  "inspection": {
+    "inspector_plugin_id": "builtin.pdf_inspector",
+    "labels": [
+      "UNTRUSTED"
+    ],
+    "object_id": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)_v1/sample.pdf",
+    "object_type": "file",
+    "signals": {
+      "pdf": {
+        "has_eof_marker": true,
+        "info_ref_present": true,
+        "info_resolved_keys": [
+          "Author",
+          "CreationDate",
+          "Creator",
+          "Keywords",
+          "ModDate",
+          "Producer",
+          "Subject",
+          "Title"
+        ],
+        "is_linearized": false,
+        "magic_ok": true,
+        "version": "1.3",
+        "xmp_creators_count": null,
+        "xmp_fields_keys": [],
+        "xmp_present": false,
+        "xmp_sha256": null
+      }
+    }
+  },
+  "schema": {
+    "name": "mimf.file_summary",
+    "version": "1.0"
+  }
+}

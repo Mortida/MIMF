@@ -5,6 +5,23 @@ import json
 import os
 import sys
 
+from datetime import date, datetime
+from pathlib import Path
+from uuid import UUID
+
+def _json_default(o):
+    if isinstance(o, (datetime, date)):
+        return o.isoformat()
+    if isinstance(o, Path):
+        return str(o)
+    if isinstance(o, UUID):
+        return str(o)
+    if isinstance(o, bytes):
+        return o.hex()
+    if isinstance(o, set):
+        return list(o)
+    return str(o)  # safe last resort for sandbox transport
+
 
 def _env_int(name: str, default: int) -> int:
     raw = os.environ.get(name, "").strip()
@@ -83,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
         from mimf.core.plugins import PluginRegistry, load_builtin_plugins
         from mimf.core.plugins.file_inspector import FileInspectorPlugin
     except Exception as e:
-        print(json.dumps({"ok": False, "error": f"import_failed: {e}"}))
+        print(json.dumps({"ok": False, "error": f"import_failed: {e}"}, default=_json_default))
         return 2
 
     path = args.path
@@ -96,11 +113,11 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(plugin, FileInspectorPlugin):
             raise TypeError(f"plugin_not_file_inspector: {plugin_id}")
         obj = plugin.inspect_file(path, object_id=args.object_id)
-        print(json.dumps({"ok": True, "plugin_id": plugin_id, "runtime_object": obj.snapshot()}))
+        print(json.dumps({"ok": True, "plugin_id": plugin_id, "runtime_object": obj.snapshot()}, default=_json_default))
         return 0
     except Exception as e:
         # Do not print tracebacks by default (may leak paths). Keep it simple.
-        print(json.dumps({"ok": False, "plugin_id": plugin_id, "error": str(e)}))
+        print(json.dumps({"ok": False, "plugin_id": plugin_id, "error": str(e)}, default=_json_default))
         return 1
 
 

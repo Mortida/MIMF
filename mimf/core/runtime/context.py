@@ -48,6 +48,24 @@ class RuntimeContext:
     _events: List[RuntimeEvent] = field(default_factory=list, init=False, repr=False)
     _lock: Lock = field(default_factory=Lock, init=False, repr=False)
 
+
+    def upsert_object(self, obj) -> None:
+        """
+        Insert or replace an object by object_id.
+
+        Security:
+        - Safe for in-place operations where object_id identity is stable.
+        - Prior state should still be preserved via events/audit logs elsewhere.
+
+        Time:  O(1)
+        Space: O(1)
+        """
+        if not isinstance(obj, RuntimeObject):
+            raise TypeError("Only RuntimeObject instances may be upserted")
+
+        with self._lock:
+            self._objects[obj.object_id] = obj
+
     def add_object(self, obj: RuntimeObject) -> "RuntimeContext":
         """
         Register a RuntimeObject in this context.
@@ -184,6 +202,10 @@ class RuntimeContext:
         Time: O(1)
         Space: O(1)
         """
-        if obj.object_id not in self._objects:
-            raise RuntimeError(f"Cannot update missing object_id: {obj.object_id}")
-        self._objects[obj.object_id] = obj
+        if not isinstance(obj, RuntimeObject):
+            raise TypeError("Only RuntimeObject instances may be updated")
+
+        with self._lock:
+            if obj.object_id not in self._objects:
+                raise RuntimeError(f"Cannot update missing object_id: {obj.object_id}")
+            self._objects[obj.object_id] = obj

@@ -1,6 +1,6 @@
-# MIMF CLI Reference (auto-captured)
+# MIMF CLI Reference (v1.0.0)
 
-Generated on: 2026-02-11T22:45:49Z
+Generated: 2026-02-12T20:11:57Z
 
 ## mimf --help
 
@@ -44,6 +44,7 @@ usage: mimf list-plugins [-h]
 options:
   -h, --help  show this help message and exit
 
+
 ## mimf inspect-file --help
 
 usage: mimf inspect-file [-h] [--object-id OBJECT_ID]
@@ -62,6 +63,7 @@ options:
                         Override RuntimeContext.context_id
   --actor-id ACTOR_ID   Optional actor id
   --sandbox             Run inspector in a subprocess sandbox
+
 
 ## mimf normalize-file --help
 
@@ -83,6 +85,7 @@ options:
   --plan-id PLAN_ID     Override MutationPlan.plan_id
   --apply               Apply mutation (default is dry-run)
   --sandbox             Run inspector in a subprocess sandbox
+
 
 ## mimf show-normalized --help
 
@@ -112,6 +115,7 @@ options:
                         Actor capability (repeatable)
   --strict              Deny export instead of redacting when capabilities are
                         missing
+
 
 ## mimf export-bundle --help
 
@@ -171,6 +175,7 @@ options:
   --persist             Persist the RuntimeContext into --db after export
   --overwrite-context   Overwrite existing context row when persisting
 
+
 ## mimf show-bundle --help
 
 usage: mimf show-bundle [-h] [--verify] [--pubkey PUBKEY]
@@ -200,6 +205,7 @@ options:
   --events EVENTS       Include the first N events (default: 0)
   --json                Print raw JSON (manifest + file_summary)
 
+
 ## mimf verify-bundle --help
 
 usage: mimf verify-bundle [-h] [--pubkey PUBKEY]
@@ -225,6 +231,7 @@ options:
                         Path to receiver Ed25519 PUBLIC key PEM (verifies
                         transfer receipts)
 
+
 ## mimf keygen --help
 
 usage: mimf keygen [-h] [--prefix PREFIX] out_dir
@@ -235,6 +242,7 @@ positional arguments:
 options:
   -h, --help       show this help message and exit
   --prefix PREFIX  Filename prefix for the generated key files
+
 
 ## mimf append-custody --help
 
@@ -258,6 +266,7 @@ options:
   --embed-pubkey        Embed derived public key in custody/public_key.pem
                         (convenient but not trusted)
 
+
 ## mimf transfer-custody --help
 
 usage: mimf transfer-custody [-h] [--note NOTE] [--signer-id SIGNER_ID]
@@ -277,6 +286,7 @@ options:
   --key KEY             Path to Ed25519 PRIVATE key PEM (sender)
   --embed-pubkey        Embed sender public key inside the receipt (convenient
                         but not trusted)
+
 
 ## mimf accept-transfer --help
 
@@ -298,6 +308,7 @@ options:
   --embed-pubkey        Embed receiver public key inside the receipt
                         (convenient but not trusted)
 
+
 ## mimf timeline --help
 
 usage: mimf timeline [-h] [--events EVENTS] [--custody CUSTODY]
@@ -314,6 +325,7 @@ options:
   --limit LIMIT      Limit timeline rows (0=all)
   --json             Print JSON
 
+
 ## mimf bundle-diff --help
 
 usage: mimf bundle-diff [-h] [--limit LIMIT] [--json] bundle_a bundle_b
@@ -327,6 +339,7 @@ options:
   --limit LIMIT  Max diff entries
   --json         Print JSON diff
 
+
 ## mimf db-init --help
 
 usage: mimf db-init [-h] --db DB
@@ -334,6 +347,7 @@ usage: mimf db-init [-h] --db DB
 options:
   -h, --help  show this help message and exit
   --db DB     Path to SQLite DB file
+
 
 ## mimf db-list-contexts --help
 
@@ -343,6 +357,7 @@ options:
   -h, --help     show this help message and exit
   --db DB        Path to SQLite DB file
   --limit LIMIT  Max contexts to show
+
 
 ## mimf db-show-context --help
 
@@ -356,6 +371,7 @@ options:
   --db DB          Path to SQLite DB file
   --events EVENTS  Number of events to include
 
+
 ## mimf serve --help
 
 usage: mimf serve [-h] [--host HOST] [--port PORT] [--db DB]
@@ -368,6 +384,7 @@ options:
   --db DB               Optional SQLite DB path for persistence endpoints
   --log-level LOG_LEVEL
                         Uvicorn log level
+
 
 ## mimf client --help
 
@@ -389,6 +406,7 @@ options:
   --api-key API_KEY     API key (X-MIMF-API-Key)
   --max-upload-bytes MAX_UPLOAD_BYTES
                         Client-side upload cap
+
 
 ## mimf demo --help
 
@@ -428,3 +446,4 @@ options:
                         Sender receipt pubkey (optional)
   --receiver-public-key RECEIVER_PUBLIC_KEY
                         Receiver receipt pubkey (optional)
+

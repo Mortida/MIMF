@@ -1,0 +1,41 @@
+{
+  "export_policy": {
+    "metadata": {
+      "missing_capabilities": [],
+      "redact_fields": []
+    },
+    "policy_id": "normalized-export-fields",
+    "reason": "Export allowed",
+    "status": "ALLOW",
+    "trace_id": "export-1770934582"
+  },
+  "normalized": {
+    "document": {
+      "author": null,
+      "content_type": "text/markdown",
+      "created": null,
+      "creator": null,
+      "format": "md",
+      "keywords": null,
+      "modified": null,
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "schema": {
+      "name": "mimf.document",
+      "version": "1.0"
+    },
+    "signals": {
+      "extension": ".md",
+      "is_probably_binary": false,
+      "mime_type": "text/markdown",
+      "sha256": "20e94d3e93ecffd1cdcbd1d2c278531e18d2242140dc3c993af63d2cdad909c0",
+      "size_bytes": 249,
+      "sniff_confidence": "low"
+    }
+  },
+  "normalizer_id": "generic",
+  "redacted_fields": [],
+  "schema_version": "mimf.document@1.0"
+}

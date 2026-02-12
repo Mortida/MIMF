@@ -1,0 +1,134 @@
+{
+  "artifacts": [
+    {
+      "content_type": "application/x-ndjson",
+      "in_merkle": true,
+      "name": "events",
+      "relpath": "events.jsonl",
+      "sha256": "80706cbf3bf55f067991dc79be4201e18e49d9c4d2fae95ea54a0aebe4f88aff",
+      "size_bytes": 6458
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "file_summary",
+      "relpath": "file_summary.json",
+      "sha256": "e72d1e7be8dcd29a4342c17afa248beb90d0382e98c225eb1f9e3143001dc584",
+      "size_bytes": 2421
+    },
+    {
+      "content_type": "text/plain",
+      "in_merkle": false,
+      "name": "hashes",
+      "relpath": "hashes.txt",
+      "sha256": "2a97c4f4c94be6ba4a89acd2a7bc531b576031f5b782856b87e8edf5481d6b13",
+      "size_bytes": 613
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "normalized",
+      "relpath": "normalized.json",
+      "sha256": "cb75072ddbd79eb8336fc7814f8eed5f37bcefb0281612dbb5d6099d4fcc2aca",
+      "size_bytes": 1208
+    },
+    {
+      "content_type": "application/x-ndjson",
+      "in_merkle": true,
+      "name": "objects",
+      "relpath": "objects.jsonl",
+      "sha256": "144abd25cbfbab3733f4bf58504a97dad6b56f1bab046ddbc64bc0a23f8876d1",
+      "size_bytes": 2509
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "sources",
+      "relpath": "sources.json",
+      "sha256": "5d51da8b8fb297c8fa939a13d632ed8114b0aeddb0b27eeb37a8f3998f5745b6",
+      "size_bytes": 182
+    }
+  ],
+  "authenticity": {
+    "public_key": null,
+    "signature_json": null,
+    "signature_sig": null,
+    "signed": false,
+    "signer_id": null
+  },
+  "bundle_id": "708bcb4acabae7bd",
+  "created_at": "2026-02-12T21:52:13.515311+00:00",
+  "environment": {
+    "platform": "Linux-6.17.0-14-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "input": {
+    "absolute_path": null,
+    "filename": "sample.pdf",
+    "mime_type": "application/pdf",
+    "size_bytes": 2593,
+    "sniff": {
+      "extension": ".pdf",
+      "mime_confidence": "high"
+    }
+  },
+  "integrity": {
+    "bundle_tip": "708bcb4acabae7bd98bc374f027b88eb023b70ed210e474b6521f1ffd0ff0a7e",
+    "merkle_root": "b82085e7b1fe5590d65755ce4b5835776b0cefab7fcb3160a2c366b269e22afc"
+  },
+  "provenance_graph": {
+    "edges": [
+      {
+        "from": "input",
+        "to": "obj",
+        "type": "inspected_as"
+      },
+      {
+        "from": "obj",
+        "to": "ctx",
+        "type": "registered_in"
+      },
+      {
+        "from": "ctx",
+        "to": "bundle",
+        "type": "exported_into"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "input",
+        "label": "sample.pdf",
+        "type": "file"
+      },
+      {
+        "id": "obj",
+        "label": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)_v1/sample.pdf",
+        "type": "runtime_object"
+      },
+      {
+        "id": "ctx",
+        "label": "context-bundle-1770933133",
+        "type": "context"
+      },
+      {
+        "id": "bundle",
+        "label": "708bcb4acabae7bd",
+        "type": "bundle"
+      }
+    ]
+  },
+  "runtime": {
+    "actor_id": null,
+    "context_id": "context-bundle-1770933133",
+    "created_at": "2026-02-12T21:52:13.510684+00:00",
+    "event_chain_ok": true,
+    "event_chain_tip": "871f2f85bae8ee257228f4809b84fcaa3dedef40a938bf4032a6ecafd21b2a1d",
+    "event_count": 5,
+    "object_count": 1,
+    "operation_name": "CLI:export-bundle"
+  },
+  "schema": {
+    "name": "mimf.forensic_bundle",
+    "version": "1.1"
+  }
+}

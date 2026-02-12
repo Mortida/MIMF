@@ -1,0 +1,142 @@
+{
+  "artifacts": [
+    {
+      "content_type": "application/x-ndjson",
+      "in_merkle": true,
+      "name": "events",
+      "relpath": "events.jsonl",
+      "sha256": "8595631dd9cdc346ee8d72536a4b50d226a355a0f8a018a085962c6bc1968bc6",
+      "size_bytes": 4597
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "file_summary",
+      "relpath": "file_summary.json",
+      "sha256": "b599e4108e6d42a2086740e836b6be2b2cffd4b34503d1c5c40930d022c3fab3",
+      "size_bytes": 1685
+    },
+    {
+      "content_type": "text/plain",
+      "in_merkle": false,
+      "name": "hashes",
+      "relpath": "hashes.txt",
+      "sha256": "c31a30e65ec19187664efacdfd1917efabf58b94c18225564c2410fb0cba926a",
+      "size_bytes": 698
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "normalized",
+      "relpath": "normalized.json",
+      "sha256": "96bae737561d04e9fa612e5159d085d881cfb1f53c2ac3528753df303ef7ca42",
+      "size_bytes": 976
+    },
+    {
+      "content_type": "application/x-ndjson",
+      "in_merkle": true,
+      "name": "objects",
+      "relpath": "objects.jsonl",
+      "sha256": "a760c8b6ec5f01f15416be76a470a9bb4578fde5090ca7f1d4d3995efd9656ea",
+      "size_bytes": 1502
+    },
+    {
+      "content_type": "text/markdown",
+      "in_merkle": true,
+      "name": "original",
+      "relpath": "original/README.md",
+      "sha256": "20e94d3e93ecffd1cdcbd1d2c278531e18d2242140dc3c993af63d2cdad909c0",
+      "size_bytes": 249
+    },
+    {
+      "content_type": "application/json",
+      "in_merkle": true,
+      "name": "sources",
+      "relpath": "sources.json",
+      "sha256": "fb48dce32ee3b5cccd3848e31c4e6ce8289bd4175ff072d1ef2146b7c1eda6ee",
+      "size_bytes": 189
+    }
+  ],
+  "authenticity": {
+    "public_key": null,
+    "signature_json": null,
+    "signature_sig": null,
+    "signed": false,
+    "signer_id": null
+  },
+  "bundle_id": "a89a36c0294e53be",
+  "created_at": "2026-02-12T22:16:22.253167+00:00",
+  "environment": {
+    "platform": "Linux-6.17.0-14-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "input": {
+    "absolute_path": null,
+    "filename": "README.md",
+    "mime_type": "text/markdown",
+    "size_bytes": 249,
+    "sniff": {
+      "extension": ".md",
+      "mime_confidence": "low"
+    }
+  },
+  "integrity": {
+    "bundle_tip": "a89a36c0294e53be154561146f6306508ade07d850cf149d3db3829905402954",
+    "merkle_root": "285152dee0e6eabdd74d0ea007dacd64f6aba417d624ac83f2038ffef75d8d11"
+  },
+  "provenance_graph": {
+    "edges": [
+      {
+        "from": "input",
+        "to": "obj",
+        "type": "inspected_as"
+      },
+      {
+        "from": "obj",
+        "to": "ctx",
+        "type": "registered_in"
+      },
+      {
+        "from": "ctx",
+        "to": "bundle",
+        "type": "exported_into"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "input",
+        "label": "README.md",
+        "type": "file"
+      },
+      {
+        "id": "obj",
+        "label": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)_v1/README.md",
+        "type": "runtime_object"
+      },
+      {
+        "id": "ctx",
+        "label": "context-bundle-1770934582",
+        "type": "context"
+      },
+      {
+        "id": "bundle",
+        "label": "a89a36c0294e53be",
+        "type": "bundle"
+      }
+    ]
+  },
+  "runtime": {
+    "actor_id": null,
+    "context_id": "context-bundle-1770934582",
+    "created_at": "2026-02-12T22:16:22.249647+00:00",
+    "event_chain_ok": true,
+    "event_chain_tip": "626f44b8a350b46b0bcacef90272cbf27a869969e9cafa5749d09c570e2189e4",
+    "event_count": 5,
+    "object_count": 1,
+    "operation_name": "CLI:export-bundle"
+  },
+  "schema": {
+    "name": "mimf.forensic_bundle",
+    "version": "1.1"
+  }
+}

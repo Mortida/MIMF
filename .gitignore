@@ -1,18 +1,83 @@
+# =========================================
+# MIMF - .gitignore (v1)
+# =========================================
+
+# -----------------------------------------
+# Python bytecode / caches
+# -----------------------------------------
 __pycache__/
-*.pyc
-.venv/
-.env
-.dist/
-build/
-dist/
-*.egg-info/
+*.py[cod]
+*$py.class
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.pytype/
+.pyre/
 
-# local/dev
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# -----------------------------------------
+# Virtual environments
+# -----------------------------------------
 .venv/
-__pycache__/
-.pytest_cache/
-.idea/
+venv/
+env/
+ENV/
+
+# -----------------------------------------
+# Build / packaging artifacts
+# -----------------------------------------
+build/
+dist/
 *.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# -----------------------------------------
+# Logs
+# -----------------------------------------
+*.log
+
+# -----------------------------------------
+# OS / editor / IDE files
+# -----------------------------------------
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
+*.iml
+
+# -----------------------------------------
+# Local DB / runtime artifacts
+# -----------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.pid
+.cache/
+
+# -----------------------------------------
+# Secrets (never commit)
+# -----------------------------------------
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# -----------------------------------------
+# Node / JS (if ever added later)
+# -----------------------------------------
+node_modules/
+
+# -----------------------------------------
+# Temporary files
+# -----------------------------------------
+tmp/
+temp/
+*.tmp

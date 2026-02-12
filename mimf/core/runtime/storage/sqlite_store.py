@@ -12,18 +12,32 @@ from ..object import RuntimeObject
 from ..events import RuntimeEvent
 from ..event_factory import event_from_record
 
+from datetime import date, datetime
+from pathlib import Path
+from uuid import UUID
+
+def _json_default(o):
+    if isinstance(o, (datetime, date)):
+        return o.isoformat()
+    if isinstance(o, Path):
+        return str(o)
+    if isinstance(o, UUID):
+        return str(o)
+    if isinstance(o, bytes):
+        return o.hex()
+    if isinstance(o, set):
+        return list(o)
+    raise TypeError(f"not JSON serializable: {type(o)!r}")
+
 
 def _json_dumps(obj: Any) -> str:
     """Deterministic JSON serialization.
 
     Security notes:
     - Do not serialize arbitrary objects; this function expects JSON-safe values.
-
-    Time:  O(n)
-    Space: O(n)
     """
 
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), default=_json_default)
 
 
 def _json_loads(text: str) -> Any:

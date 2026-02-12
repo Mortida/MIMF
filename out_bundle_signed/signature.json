@@ -1,0 +1,23 @@
+{
+  "algorithm": "Ed25519",
+  "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAd1Ic8i6kjT32Q+AAIwpAos9eJllU1kaeW21AxiABBSY=\n-----END PUBLIC KEY-----\n",
+  "schema": {
+    "name": "mimf.bundle_signature",
+    "version": "1.0"
+  },
+  "signed_at": "2026-02-12T22:18:08.457672+00:00",
+  "signed_payload": {
+    "artifacts": {
+      "events.jsonl": "78755d29b0a9a24638a461536ee7ef4e9b55217ffd7ea6ed438e6e84ad584dfb",
+      "file_summary.json": "42b8a51d0b4e296acefac16b310d478c346b67165b41d4ccae2b8e6c625a5c38",
+      "normalized.json": "8a873ebcb7c0249372ec0a47017cdadabbee3f9aa927f9cdc9cdc109c9ba473a",
+      "objects.jsonl": "535d9ebba3e7b6700f06e4160b8ac07f454c41c814794ab5bab0284c18debad4",
+      "original/README.md": "20e94d3e93ecffd1cdcbd1d2c278531e18d2242140dc3c993af63d2cdad909c0",
+      "sources.json": "fb48dce32ee3b5cccd3848e31c4e6ce8289bd4175ff072d1ef2146b7c1eda6ee"
+    },
+    "bundle_id": "98a902fc66c5b611",
+    "event_chain_tip": "45b476ac62bfb23a75c7ab2af64e9b97f6c2f277c864e210e240b9b91a276162",
+    "merkle_root": "2cdf6e3c3c5ad53e3d0b7f9a919b204931f78bc75cd797bbd46080fab1cd2ca8"
+  },
+  "signer_id": "operator-1"
+}

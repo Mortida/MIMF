@@ -1,0 +1,56 @@
+{
+  "export_policy": {
+    "metadata": {
+      "missing_capabilities": [
+        "export:document.identifying",
+        "export:document.tooling"
+      ],
+      "redact_fields": [
+        "author",
+        "creator",
+        "keywords",
+        "producer",
+        "subject",
+        "title"
+      ]
+    },
+    "policy_id": "normalized-export-fields",
+    "reason": "Redact sensitive fields for export",
+    "status": "ALLOW",
+    "trace_id": "export-1770933133"
+  },
+  "normalized": {
+    "document": {
+      "author": null,
+      "content_type": "application/pdf",
+      "created": "D:20260212203539+00'00'",
+      "creator": null,
+      "format": "pdf",
+      "keywords": null,
+      "modified": "D:20260212203539+00'00'",
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "schema": {
+      "name": "mimf.document",
+      "version": "1.0"
+    },
+    "signals": {
+      "xmp_creators_count": 0,
+      "xmp_fields_present": false,
+      "xmp_present": false,
+      "xmp_sha256": null
+    }
+  },
+  "normalizer_id": "pdf",
+  "redacted_fields": [
+    "author",
+    "creator",
+    "keywords",
+    "producer",
+    "subject",
+    "title"
+  ],
+  "schema_version": "mimf.document@1.0"
+}

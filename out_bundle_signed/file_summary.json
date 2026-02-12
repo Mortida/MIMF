@@ -1,0 +1,61 @@
+{
+  "export_policy": {
+    "missing_capabilities": [],
+    "policy_id": "normalized-export-fields",
+    "reason": "Export allowed",
+    "redacted_fields": [],
+    "status": "ALLOW",
+    "trace_id": "export-1770934688"
+  },
+  "extraction": {
+    "document": {
+      "author": null,
+      "content_type": "text/markdown",
+      "created": null,
+      "creator": null,
+      "format": "md",
+      "keywords": null,
+      "modified": null,
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "normalizer_id": "generic",
+    "schema_version": "mimf.document@1.0",
+    "signals": {
+      "extension": ".md",
+      "is_probably_binary": false,
+      "mime_type": "text/markdown",
+      "sha256": "20e94d3e93ecffd1cdcbd1d2c278531e18d2242140dc3c993af63d2cdad909c0",
+      "size_bytes": 249,
+      "sniff_confidence": "low"
+    },
+    "sources_count": null
+  },
+  "input": {
+    "absolute_path": null,
+    "extension": ".md",
+    "filename": "README.md",
+    "mime_confidence": "low",
+    "mime_type": "text/markdown",
+    "sha256": "20e94d3e93ecffd1cdcbd1d2c278531e18d2242140dc3c993af63d2cdad909c0",
+    "size_bytes": 249,
+    "stat": {
+      "ctime": "2026-02-12 22:15:27.369477+00:00",
+      "mtime": "2026-02-12 22:15:27.369477+00:00"
+    }
+  },
+  "inspection": {
+    "inspector_plugin_id": "builtin.generic_file_inspector",
+    "labels": [
+      "UNTRUSTED"
+    ],
+    "object_id": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)_v1/README.md",
+    "object_type": "file",
+    "signals": {}
+  },
+  "schema": {
+    "name": "mimf.file_summary",
+    "version": "1.0"
+  }
+}

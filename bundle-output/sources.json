@@ -1,0 +1,11 @@
+{
+  "sources": {
+    "fallback": true,
+    "generic_fields_present": {
+      "extension": true,
+      "is_probably_binary": true,
+      "sha256": true,
+      "size_bytes": true
+    }
+  }
+}

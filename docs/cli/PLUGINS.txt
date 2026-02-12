@@ -1,0 +1,4 @@
+builtin.generic_file_inspector  v0.2  actions=[inspect_file]  name=Built-in Generic File Inspector
+builtin.pdf_inspector  v0.3  actions=[inspect_file]  name=Built-in PDF Inspector (Metadata Signals)
+builtin.json_inspector  v0.2  actions=[inspect_file]  name=Built-in JSON Inspector
+builtin.docx_inspector  v1.0.0  actions=[inspect]  name=DOCX Inspector

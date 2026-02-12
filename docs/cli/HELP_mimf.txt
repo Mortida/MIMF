@@ -1,0 +1,31 @@
+usage: mimf [-h]
+            {list-plugins,inspect-file,normalize-file,show-normalized,export-bundle,show-bundle,verify-bundle,keygen,append-custody,transfer-custody,accept-transfer,timeline,bundle-diff,db-init,db-list-contexts,db-show-context,serve,client,demo}
+            ...
+
+MIMF CLI
+
+positional arguments:
+  {list-plugins,inspect-file,normalize-file,show-normalized,export-bundle,show-bundle,verify-bundle,keygen,append-custody,transfer-custody,accept-transfer,timeline,bundle-diff,db-init,db-list-contexts,db-show-context,serve,client,demo}
+    list-plugins        List built-in plugins
+    inspect-file        Inspect a local file
+    normalize-file      Inspect a file and attach normalized metadata
+    show-normalized     Inspect a file and print normalized output (no
+                        mutation)
+    export-bundle       Create a tamper-evident forensic export bundle
+    show-bundle         Show a human-friendly summary of a bundle
+    verify-bundle       Verify a forensic bundle directory
+    keygen              Generate an Ed25519 keypair for signing bundles
+    append-custody      Append a chain-of-custody event to an existing bundle
+    transfer-custody    Create a sender-signed transfer receipt
+    accept-transfer     Accept a transfer receipt (receiver-signed)
+    timeline            Show a chronological timeline for a bundle
+    bundle-diff         Diff two bundle directories
+    db-init             Initialize a SQLite runtime store
+    db-list-contexts    List contexts stored in a SQLite runtime store
+    db-show-context     Show a stored context (objects + events)
+    serve               Run the MIMF FastAPI server
+    client              MIMF API client (talk to a running server)
+    demo                End-to-end demo against a running API
+
+options:
+  -h, --help            show this help message and exit

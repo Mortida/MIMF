@@ -1,0 +1,61 @@
+{
+  "export_policy": {
+    "missing_capabilities": [],
+    "policy_id": "normalized-export-fields",
+    "reason": "Export allowed",
+    "redacted_fields": [],
+    "status": "ALLOW",
+    "trace_id": "export-1770851565"
+  },
+  "extraction": {
+    "document": {
+      "author": null,
+      "content_type": "application/zip",
+      "created": null,
+      "creator": null,
+      "format": "zip",
+      "keywords": null,
+      "modified": null,
+      "producer": null,
+      "subject": null,
+      "title": null
+    },
+    "normalizer_id": "generic",
+    "schema_version": "mimf.document@1.0",
+    "signals": {
+      "extension": ".zip",
+      "is_probably_binary": true,
+      "mime_type": "application/zip",
+      "sha256": "26846197b4b255cbfec280addf50986702069bc33e0c3b72fbe1378274590343",
+      "size_bytes": 4168,
+      "sniff_confidence": "high"
+    },
+    "sources_count": null
+  },
+  "input": {
+    "absolute_path": null,
+    "extension": ".zip",
+    "filename": "mimf_bundle.zip",
+    "mime_confidence": "high",
+    "mime_type": "application/zip",
+    "sha256": "26846197b4b255cbfec280addf50986702069bc33e0c3b72fbe1378274590343",
+    "size_bytes": 4168,
+    "stat": {
+      "ctime": "2026-01-28 23:54:05.803010+00:00",
+      "mtime": "2026-01-28 23:54:05.803010+00:00"
+    }
+  },
+  "inspection": {
+    "inspector_plugin_id": "builtin.generic_file_inspector",
+    "labels": [
+      "UNTRUSTED"
+    ],
+    "object_id": "file:/home/mjkinz/PycharmProjects/PythonProject/Intelligence_Mutation_(MIMF)_plugins_cli_v23_sandbox_policy_pack/Intelligence_Mutation_(MIMF)_v1/mimf_bundle.zip",
+    "object_type": "file",
+    "signals": {}
+  },
+  "schema": {
+    "name": "mimf.file_summary",
+    "version": "1.0"
+  }
+}

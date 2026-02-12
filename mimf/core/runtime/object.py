@@ -7,7 +7,6 @@ from copy import deepcopy
 import hashlib
 import json
 
-
 def _json_safe(value: Any) -> Any:
     if isinstance(value, datetime):
         return value.isoformat()
@@ -17,12 +16,10 @@ def _json_safe(value: Any) -> Any:
         return [_json_safe(v) for v in value]
     return value
 
-
 def _stable_sha256(payload: Dict[str, Any]) -> str:
     safe_payload = _json_safe(payload)
     serialized = json.dumps(safe_payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 @dataclass(frozen=True)
 class RuntimeObject:

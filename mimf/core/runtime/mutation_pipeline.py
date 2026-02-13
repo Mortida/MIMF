@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-from typing import Optional, Type, Iterable, Union, Any
+from typing import Any, Iterable, Optional, Type, Union
 
-from mimf.core.policy_engine.policy_engine import PolicyEngine
 from mimf.core.policy_engine.policy_context import PolicyContext
+from mimf.core.policy_engine.policy_engine import PolicyEngine
 from mimf.core.policy_engine.policy_models import DecisionStatus, PolicyDecision
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.events import InspectionEvent, PolicyEvaluationEvent
 from mimf.core.security.boundaries import SecurityBoundary
 from mimf.core.security.capabilities import Capability
 
-from .mutation import MutationPlan, MutationExecutor
-from .object import RuntimeObject
 from .dry_run_executor import DryRunExecutor
+from .mutation import MutationExecutor, MutationPlan
+from .object import RuntimeObject
 
 
 class SafeMutationPipeline:

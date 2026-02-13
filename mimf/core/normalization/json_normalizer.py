@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict, Mapping, Optional
 
 from mimf.core.runtime.mutation import MutationPlan
@@ -12,11 +12,7 @@ from .schema import build_document
 
 @dataclass(frozen=True)
 class NormalizationResult:
-    """Structured output of a normalization routine.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Structured output of a normalization routine."""
 
     schema_version: str
     normalized: Dict[str, Any]
@@ -33,8 +29,6 @@ def normalize_json_metadata(obj: RuntimeObject) -> NormalizationResult:
     - Treat all inputs as attacker-controlled.
     - This function never parses JSON content; it only uses the inspector's summary.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     md: Mapping[str, Any] = getattr(obj, "metadata", {}) or {}
@@ -65,7 +59,9 @@ def normalize_json_metadata(obj: RuntimeObject) -> NormalizationResult:
         "json_summary_present": bool(js),
     }
 
-    return NormalizationResult(schema_version="mimf.document@1.0", normalized=normalized, sources=sources)
+    return NormalizationResult(
+        schema_version="mimf.document@1.0", normalized=normalized, sources=sources
+    )
 
 
 def build_json_normalization_plan(
@@ -73,11 +69,7 @@ def build_json_normalization_plan(
     *,
     plan_id: Optional[str] = None,
 ) -> MutationPlan:
-    """Build a MutationPlan that attaches normalized JSON metadata.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Build a MutationPlan that attaches normalized JSON metadata."""
 
     res = normalize_json_metadata(obj)
     now = datetime.now(UTC)

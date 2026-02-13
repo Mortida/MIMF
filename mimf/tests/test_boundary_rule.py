@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from mimf.core.policy_engine.boundary_rule import BoundaryRule
 from mimf.core.policy_engine.policy_context import PolicyContext

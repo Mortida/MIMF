@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mimf.core.runtime.context import RuntimeContext
@@ -10,11 +10,7 @@ from mimf.core.runtime.storage.sqlite_store import SQLiteRuntimeStore
 
 
 def test_sqlite_store_roundtrip(tmp_path: Path) -> None:
-    """Roundtrip RuntimeContext through SQLite.
-
-    Time:  O(o + e)
-    Space: O(o + e)
-    """
+    """Roundtrip RuntimeContext through SQLite."""
 
     ctx = RuntimeContext(context_id="ctx-1", actor_id="tester", operation_name="test")
 
@@ -71,11 +67,7 @@ def test_sqlite_store_roundtrip(tmp_path: Path) -> None:
 
 
 def test_sqlite_store_overwrite(tmp_path: Path) -> None:
-    """Overwrite mode replaces an existing context.
-
-    Time:  O(o + e)
-    Space: O(o + e)
-    """
+    """Overwrite mode replaces an existing context."""
 
     db_path = tmp_path / "mimf.db"
     store = SQLiteRuntimeStore(db_path)

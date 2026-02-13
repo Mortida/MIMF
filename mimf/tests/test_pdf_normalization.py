@@ -1,6 +1,9 @@
 from pathlib import Path
 
-from mimf.core.normalization.pdf_normalizer import build_pdf_normalization_plan, normalize_pdf_metadata
+from mimf.core.normalization.pdf_normalizer import (
+    build_pdf_normalization_plan,
+    normalize_pdf_metadata,
+)
 from mimf.core.plugins import PluginRegistry, load_builtin_plugins, select_file_inspector
 
 

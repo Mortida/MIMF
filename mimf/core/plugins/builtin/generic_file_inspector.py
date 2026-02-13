@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Dict
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -19,8 +19,6 @@ def _sha256_file(path: str, *, chunk_size: int = 1024 * 1024) -> str:
     Security notes:
     - Streaming avoids loading untrusted files into memory.
 
-    Time:  O(n) where n is file size
-    Space: O(1)
     """
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -38,8 +36,6 @@ def _is_probably_binary(path: str, *, sample_bytes: int = 4096) -> bool:
     Security notes:
     - Reads only a bounded prefix of the file.
 
-    Time:  O(1)
-    Space: O(1)
     """
     with open(path, "rb") as f:
         sample = f.read(sample_bytes)
@@ -58,9 +54,7 @@ class GenericFileInspector(FileInspectorPlugin):
     - Treat file content as untrusted.
     - Avoid parsing/executing file content.
 
-    Time:
     - inspect_file: O(n) hashing + O(1) stat/sample
-    Space:
     - O(1)
     """
 
@@ -77,11 +71,7 @@ class GenericFileInspector(FileInspectorPlugin):
 
     @property
     def capabilities(self) -> FileInspectorCapabilities:
-        """Fallback capabilities: matches everything.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Fallback capabilities: matches everything."""
         return FileInspectorCapabilities(
             supported_mime_types=frozenset({"*"}),
             supported_extensions=frozenset({"*"}),
@@ -102,35 +92,19 @@ class GenericFileInspector(FileInspectorPlugin):
     # --- Selection helpers ---
 
     def can_handle(self, path: str) -> bool:
-        """Legacy compatibility: always True.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Legacy compatibility: always True."""
         return True
 
     def can_handle_file(self, info: FileInfo) -> bool:
-        """FileInfo-aware compatibility: always True.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """FileInfo-aware compatibility: always True."""
         return True
 
     def match_score(self, path: str) -> int:
-        """Lowest-priority fallback.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Lowest-priority fallback."""
         return 1
 
     def match_score_file(self, info: FileInfo) -> int:
-        """Lowest-priority fallback.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Lowest-priority fallback."""
         return 1
 
     # --- Inspection ---

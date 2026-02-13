@@ -8,29 +8,36 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, Response
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Response, UploadFile
+from fastapi.responses import FileResponse
 from starlette.requests import Request
 
 from mimf.api.auth import Actor, authenticate, load_auth_config, requires_auth
-from mimf.api.models import ExportBundleOut, FileInfoOut, InspectOut, NormalizeOut, VerifyBundleOut, ContextSummaryOut, ContextDetailOut
-
-from mimf.core.plugins import PluginRegistry, load_builtin_plugins, select_file_inspector, inspect_file_sandboxed
+from mimf.api.middleware import AccessLogMiddleware, RequestIdMiddleware
+from mimf.api.models import (
+    ContextDetailOut,
+    ContextSummaryOut,
+    FileInfoOut,
+    InspectOut,
+    NormalizeOut,
+    VerifyBundleOut,
+)
+from mimf.api.rate_limit import TokenBucketRateLimiter
+from mimf.core.normalization import apply_normalized_export_policy, normalize_runtime_object
+from mimf.core.plugins import (
+    PluginRegistry,
+    inspect_file_sandboxed,
+    load_builtin_plugins,
+    select_file_inspector,
+)
 from mimf.core.plugins.file_info import sniff_file_info
-from mimf.core.normalization import normalize_runtime_object, apply_normalized_export_policy
 from mimf.core.policy_engine.policy_pack import load_policy_pack, resolve_policy_pack_path
-from mimf.core.security.boundaries import SecurityBoundary
 from mimf.core.runtime.context import RuntimeContext
+from mimf.core.runtime.inspection import Inspector
 from mimf.core.runtime.object import RuntimeObject
 from mimf.core.runtime.storage.sqlite_store import SQLiteRuntimeStore
-from mimf.core.runtime.inspection import Inspector
-
-from mimf.forensic.bundle import build_forensic_bundle
-from mimf.forensic.bundle import verify_forensic_bundle_details
-
-from mimf.api.middleware import AccessLogMiddleware, RequestIdMiddleware
-from mimf.api.rate_limit import TokenBucketRateLimiter
-
+from mimf.core.security.boundaries import SecurityBoundary
+from mimf.forensic.bundle import build_forensic_bundle, verify_forensic_bundle_details
 
 log = logging.getLogger("mimf.api")
 
@@ -42,8 +49,6 @@ class ServiceConfig:
     Security notes:
     - db_path is optional. If not provided, persistence endpoints are disabled.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     db_path: Optional[Path] = None
@@ -61,8 +66,6 @@ def _env_int(name: str, default: int) -> int:
     Security notes:
     - Env vars are treated as trusted server configuration.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     raw = os.environ.get(name, "").strip()
@@ -75,11 +78,7 @@ def _env_int(name: str, default: int) -> int:
 
 
 def create_app(*, db_path: Optional[str] = None) -> FastAPI:
-    """Create the FastAPI app.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Create the FastAPI app."""
 
     cfg = ServiceConfig(
         db_path=Path(db_path) if db_path else None,
@@ -125,8 +124,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         Security notes:
         - If auth is required and missing/invalid, fail closed (401).
 
-        Time:  O(k) where k is number of configured keys (small)
-        Space: O(1)
         """
 
         if not must_auth:
@@ -160,7 +157,11 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
 
     @app.get("/health")
     def health() -> Dict[str, Any]:
-        return {"ok": True, "auth_required": must_auth, "db": str(cfg.db_path) if cfg.db_path else None}
+        return {
+            "ok": True,
+            "auth_required": must_auth,
+            "db": str(cfg.db_path) if cfg.db_path else None,
+        }
 
     def _require_db() -> SQLiteRuntimeStore:
         """Return the configured SQLiteRuntimeStore or raise 404.
@@ -168,8 +169,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         Security notes:
         - If DB not configured, do not expose persistence endpoints.
 
-        Time:  O(1)
-        Space: O(1)
         """
 
         store = getattr(app.state, "store", None)
@@ -177,20 +176,16 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="persistence_disabled")
         return store
 
-
     def _require_cap(actor: Actor, cap: str) -> None:
         """Ensure the actor has a capability.
 
         Security notes:
         - Fail closed (403) if missing.
 
-        Time:  O(c) where c is number of actor capabilities (small)
-        Space: O(1)
         """
 
         if cap not in (actor.capabilities or []):
             raise HTTPException(status_code=403, detail="forbidden")
-
 
     @app.get("/contexts", response_model=List[ContextSummaryOut])
     def list_contexts_endpoint(
@@ -220,8 +215,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - X-Next-Offset: next offset if more rows likely
         - X-Has-More: true/false
 
-        Time:  O(limit)
-        Space: O(limit)
         """
 
         _require_cap(actor, "runtime:read")
@@ -245,7 +238,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
 
         return [ContextSummaryOut(**r) for r in rows]
 
-
     @app.get("/contexts/{context_id}", response_model=ContextDetailOut)
     def get_context_endpoint(
         context_id: str,
@@ -261,8 +253,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - Context content may include sensitive metadata.
         - Capability gate prevents accidental leakage.
 
-        Time:  O(o + e) to load context
-        Space: O(o + e)
         """
 
         _require_cap(actor, "runtime:read")
@@ -293,7 +283,16 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         for i, ev in enumerate(ctx.get_events()):
             if i >= int(events_limit):
                 break
-            evs.append({"event_type": ev.event_type, "event_id": str(ev.event_id), "created_at": ev.created_at.isoformat(), "payload": ev.to_payload(), "previous_event_hash": ev.previous_event_hash, "event_hash": ev.event_hash})
+            evs.append(
+                {
+                    "event_type": ev.event_type,
+                    "event_id": str(ev.event_id),
+                    "created_at": ev.created_at.isoformat(),
+                    "payload": ev.to_payload(),
+                    "previous_event_hash": ev.previous_event_hash,
+                    "event_hash": ev.event_hash,
+                }
+            )
 
         return ContextDetailOut(
             context=summary,
@@ -302,7 +301,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
             integrity_ok=bool(ctx.verify_integrity()),
         )
 
-
     def _save_upload_to_temp(upload: UploadFile) -> Path:
         """Persist an UploadFile to a temporary file on disk.
 
@@ -310,8 +308,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - Never trust filename for path; we use a temp directory.
         - Reads in chunks to avoid memory blow-ups.
 
-        Time:  O(n)
-        Space: O(1)
         """
 
         tmpdir = Path(tempfile.mkdtemp(prefix="mimf_api_"))
@@ -330,15 +326,12 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
                 f.write(chunk)
         return out
 
-
     def _inspect_runtime_object(path: Path, *, labels: List[str]) -> "RuntimeObject":
         """Inspect a path into a RuntimeObject, optionally using a subprocess sandbox.
 
         Security notes:
         - Sandbox is best-effort; still treat plugins as trusted code.
 
-        Time:  O(n)
-        Space: dominated by plugin
         """
 
         registry = PluginRegistry()
@@ -354,7 +347,9 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
                 memory_limit_mb=int(getattr(cfg, "sandbox_mem_mb", 256)),
             )
             if not res.ok or res.runtime_object is None:
-                raise HTTPException(status_code=400, detail={"error": "sandbox_failed", "reason": res.error})
+                raise HTTPException(
+                    status_code=400, detail={"error": "sandbox_failed", "reason": res.error}
+                )
             runtime_object = res.runtime_object
         else:
             runtime_object = plugin.inspect_file(str(path))
@@ -364,9 +359,12 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
 
         return runtime_object
 
-
     def _effective_export_boundary_and_strict(
-        *, boundary_id: str, boundary_caps_csv: Optional[str], strict_hint: bool, policy_pack: Optional[str]
+        *,
+        boundary_id: str,
+        boundary_caps_csv: Optional[str],
+        strict_hint: bool,
+        policy_pack: Optional[str],
     ) -> tuple[SecurityBoundary, bool]:
         """Compute effective boundary + strictness, optionally from a policy pack.
 
@@ -374,8 +372,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - request-provided caps are only hints; we filter to an allowlist.
         - policy packs are resolved under the project policy_packs directory by default.
 
-        Time:  O(k)
-        Space: O(k)
         """
 
         allowlist = {
@@ -399,24 +395,27 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
                 allow_arbitrary_paths=bool(getattr(cfg, "allow_policy_pack_paths", False)),
             )
             pack = load_policy_pack(pack_path)
-            safe_boundary_caps = [c for c in (pack.allow_capabilities or []) if c in allowlist] or ["export:document.basic"]
-            strict_effective = (pack.export_mode == "deny")
+            safe_boundary_caps = [c for c in (pack.allow_capabilities or []) if c in allowlist] or [
+                "export:document.basic"
+            ]
+            strict_effective = pack.export_mode == "deny"
 
-        boundary = SecurityBoundary.from_names(boundary_id=boundary_id, capability_names=safe_boundary_caps)
+        boundary = SecurityBoundary.from_names(
+            boundary_id=boundary_id, capability_names=safe_boundary_caps
+        )
         return boundary, strict_effective
 
-
     def _inspect_path(path: Path, *, labels: List[str]) -> InspectOut:
-        """Inspect a file path via plugin system.
-
-        Time:  dominated by plugin.inspect_file (usually O(n))
-        Space: dominated by plugin implementation
-        """
+        """Inspect a file path via plugin system."""
 
         runtime_object = _inspect_runtime_object(path, labels=labels)
 
         # Emit inspection event into a short-lived context
-        context = RuntimeContext(context_id=f"api-{os.getpid()}-{int(os.times().elapsed)}", actor_id=None, operation_name="API:inspect")
+        context = RuntimeContext(
+            context_id=f"api-{os.getpid()}-{int(os.times().elapsed)}",
+            actor_id=None,
+            operation_name="API:inspect",
+        )
         context.add_object(runtime_object)
         Inspector.inspect(runtime_object, context)
 
@@ -449,8 +448,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         Security notes:
         - Returns only plugin-produced metadata signals (no file bytes).
 
-        Time:  O(n)
-        Space: dominated by plugin
         """
 
         path = _save_upload_to_temp(file)
@@ -477,8 +474,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - Boundary capabilities come from server-side defaults + request hint.
           We treat request caps as a *hint* and filter them to a safe allowlist.
 
-        Time:  O(n)
-        Space: dominated by plugin/normalizer
         """
 
         path = _save_upload_to_temp(file)
@@ -516,7 +511,10 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
 
             out_norm: Dict[str, Any]
             if export_res.decision.status.value == "DENY":
-                out_norm = {"error": "export denied by policy", "policy": export_res.decision.to_dict()}
+                out_norm = {
+                    "error": "export denied by policy",
+                    "policy": export_res.decision.to_dict(),
+                }
             else:
                 out_norm = dict(export_res.redacted)
 
@@ -550,8 +548,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - Default is NOT to include original bytes.
         - Normalized fields are policy-controlled.
 
-        Time:  O(n)
-        Space: O(1) extra besides serialization buffers
         """
 
         path = _save_upload_to_temp(file)
@@ -559,14 +555,16 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         try:
             runtime_object = _inspect_runtime_object(path, labels=[])
 
-            context = RuntimeContext(context_id=f"api-bundle-{int(os.times().elapsed)}", actor_id=actor.actor_id, operation_name="API:export-bundle")
+            context = RuntimeContext(
+                context_id=f"api-bundle-{int(os.times().elapsed)}",
+                actor_id=actor.actor_id,
+                operation_name="API:export-bundle",
+            )
             context.add_object(runtime_object)
             Inspector.inspect(runtime_object, context)
 
             # Optional persistence (SQLite): persist the runtime context for later retrieval.
             # Security: require explicit runtime:write capability (fail closed).
-            # Time:  O(o+e) where o=#objects, e=#events
-            # Space: O(1) extra
             if bool(persist):
                 _require_cap(actor, "runtime:write")
                 store = _require_db()
@@ -578,7 +576,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
                 strict_hint=bool(strict),
                 policy_pack=policy_pack,
             )
-
 
             result = build_forensic_bundle(
                 input_path=str(path),
@@ -627,8 +624,6 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
         - We extract into a temp directory and recompute hashes + Merkle root.
         - Authenticity is verified ONLY when a trusted public key is provided.
 
-        Time:  O(total_bytes)
-        Space: O(1)
         """
 
         zpath = _save_upload_to_temp(bundle_zip)
@@ -680,15 +675,12 @@ def create_app(*, db_path: Optional[str] = None) -> FastAPI:
     return app
 
 
-
 def app_from_env() -> FastAPI:
     """Factory used by Uvicorn / Docker entrypoints.
 
     Reads:
     - MIMF_DB_PATH: optional SQLite database path
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     db_path = os.environ.get("MIMF_DB_PATH", "").strip() or None

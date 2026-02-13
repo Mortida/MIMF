@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+import json
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, FrozenSet
-from copy import deepcopy
-import hashlib
-import json
+
 
 def _json_safe(value: Any) -> Any:
     if isinstance(value, datetime):
@@ -16,10 +17,12 @@ def _json_safe(value: Any) -> Any:
         return [_json_safe(v) for v in value]
     return value
 
+
 def _stable_sha256(payload: Dict[str, Any]) -> str:
     safe_payload = _json_safe(payload)
     serialized = json.dumps(safe_payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
 
 @dataclass(frozen=True)
 class RuntimeObject:
@@ -31,10 +34,7 @@ class RuntimeObject:
     - Deterministic identity: snapshot_hash is stable for identical content
     - Defensive copying: caller-held dicts cannot mutate internal state
 
-    Complexity
-    - create / compute_snapshot_hash: O(n) time and O(n) space where n is the
       total size of origin + metadata + labels when serialized.
-    - snapshot: O(n) time and O(n) space due to deep copies.
     """
 
     object_id: str
@@ -116,8 +116,6 @@ class RuntimeObject:
         - Labels are treated as classification tags and may impact policy.
         - Returns a new immutable object; no in-place mutation.
 
-        Time:  O(n) due to snapshot hash recompute
-        Space: O(n) due to defensive copying
         """
 
         return RuntimeObject.create(
@@ -135,8 +133,6 @@ class RuntimeObject:
         Security notes:
         - Metadata may include sensitive content; policy should govern export.
 
-        Time:  O(n) due to snapshot hash recompute
-        Space: O(n)
         """
 
         return RuntimeObject.create(
@@ -148,7 +144,6 @@ class RuntimeObject:
             created_at=self.created_at,
         )
 
-
     @classmethod
     def from_snapshot(cls, snap: Dict[str, Any]) -> "RuntimeObject":
         """Reconstruct a RuntimeObject from a snapshot dict.
@@ -156,8 +151,6 @@ class RuntimeObject:
         Security notes:
         - Snapshot input is untrusted; validate required keys.
 
-        Time:  O(n) due to deep copies + snapshot hash recompute
-        Space: O(n)
         """
 
         required = {"object_id", "object_type", "origin", "metadata", "labels", "created_at"}

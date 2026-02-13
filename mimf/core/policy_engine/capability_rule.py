@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from mimf.core.security.capabilities import Capability
+
 from .policy_context import PolicyContext
 from .policy_models import DecisionStatus, PolicyDecision
 from .policy_rules import PolicyRule

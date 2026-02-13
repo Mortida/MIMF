@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -20,8 +20,6 @@ def _sha256_file(path: str, *, chunk_size: int = 1024 * 1024) -> str:
     Security notes:
     - Streaming avoids loading untrusted files into memory.
 
-    Time:  O(n) where n is file size
-    Space: O(1)
     """
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -45,9 +43,7 @@ class JsonFileInspector(FileInspectorPlugin):
     - Enforces a max_bytes_for_parse limit before parsing JSON.
     - Never executes embedded code; uses the stdlib json parser.
 
-    Time:
     - inspect_file: O(n) hashing + O(n) parsing (if under limit)
-    Space:
     - O(1) for hashing stream; O(n) for JSON parse (if under limit)
     """
 
@@ -73,15 +69,15 @@ class JsonFileInspector(FileInspectorPlugin):
         Security notes:
         - Capabilities are hints; selector remains defensive.
 
-        Time:  O(1)
-        Space: O(1)
         """
         return FileInspectorCapabilities(
-            supported_mime_types=frozenset({
-                "application/json",
-                "text/json",
-                "application/*+json",
-            }),
+            supported_mime_types=frozenset(
+                {
+                    "application/json",
+                    "text/json",
+                    "application/*+json",
+                }
+            ),
             supported_extensions=frozenset({".json"}),
             # Prevent accidental selection for extremely large files.
             max_size_bytes=self.max_bytes_for_parse * 10,
@@ -101,11 +97,7 @@ class JsonFileInspector(FileInspectorPlugin):
     # --- Selection helpers ---
 
     def can_handle(self, path: str) -> bool:
-        """Legacy path-based compatibility.
-
-        Time:  O(len(path))
-        Space: O(1)
-        """
+        """Legacy path-based compatibility."""
         return path.lower().endswith(".json")
 
     def can_handle_file(self, info: FileInfo) -> bool:
@@ -114,8 +106,6 @@ class JsonFileInspector(FileInspectorPlugin):
         Security notes:
         - Does not parse file content.
 
-        Time:  O(1)
-        Space: O(1)
         """
         if info.extension == ".json":
             return True
@@ -123,11 +113,7 @@ class JsonFileInspector(FileInspectorPlugin):
         return mt in {"application/json", "text/json"} or mt.endswith("+json")
 
     def match_score(self, path: str) -> int:
-        """Legacy scoring (path-only).
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Legacy scoring (path-only)."""
         return 100
 
     def match_score_file(self, info: FileInfo) -> int:
@@ -135,8 +121,6 @@ class JsonFileInspector(FileInspectorPlugin):
 
         Prefers strong JSON signal (mime confidence) over extension.
 
-        Time:  O(1)
-        Space: O(1)
         """
         score = 90
         if info.extension == ".json":

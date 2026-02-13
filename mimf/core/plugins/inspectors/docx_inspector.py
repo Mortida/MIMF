@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
-import zipfile
 
 from defusedxml import ElementTree as DefusedET
 
@@ -30,8 +30,6 @@ class DocxInspector:
         - Safe XML parsing via defusedxml
         - Reads only docProps/*, does not execute macros
 
-        Time:  O(E + U) bounded by limits
-        Space: O(S) bounded by limits
         """
         if path.suffix.lower() not in self.supported_suffixes:
             raise ValueError(f"Unsupported file type: {path.suffix}")

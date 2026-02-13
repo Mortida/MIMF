@@ -1,7 +1,7 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
-from mimf.core.policy_engine.policy_engine import PolicyEngine
 from mimf.core.policy_engine.policy_context import PolicyContext
+from mimf.core.policy_engine.policy_engine import PolicyEngine
 from mimf.core.policy_engine.policy_models import DecisionStatus, PolicyDecision
 from mimf.core.policy_engine.policy_rules import PolicyRule
 from mimf.core.runtime.mutation import MutationPlan
@@ -12,14 +12,18 @@ class _AllowRule(PolicyRule):
     rule_id = "allow"
 
     def evaluate(self, context: PolicyContext):
-        return PolicyDecision(status=DecisionStatus.ALLOW, policy_id="allow", reason="ok", trace_id="")
+        return PolicyDecision(
+            status=DecisionStatus.ALLOW, policy_id="allow", reason="ok", trace_id=""
+        )
 
 
 class _DenyRule(PolicyRule):
     rule_id = "deny"
 
     def evaluate(self, context: PolicyContext):
-        return PolicyDecision(status=DecisionStatus.DENY, policy_id="deny", reason="no", trace_id="")
+        return PolicyDecision(
+            status=DecisionStatus.DENY, policy_id="deny", reason="no", trace_id=""
+        )
 
 
 class _NoneRule(PolicyRule):

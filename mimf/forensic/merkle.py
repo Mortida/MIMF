@@ -12,8 +12,6 @@ def sha256_hex(data: bytes) -> str:
     - SHA-256 provides strong collision resistance for integrity.
     - This is integrity-only; it does not provide authenticity.
 
-    Time:  O(n)
-    Space: O(1) extra
     """
 
     h = hashlib.sha256()
@@ -22,11 +20,7 @@ def sha256_hex(data: bytes) -> str:
 
 
 def _hash_pair(left_hex: str, right_hex: str) -> str:
-    """Hash a pair of hex digests deterministically.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Hash a pair of hex digests deterministically."""
 
     return sha256_hex((left_hex + right_hex).encode("utf-8"))
 
@@ -43,8 +37,6 @@ def merkle_root_hex(leaves: Iterable[str]) -> str:
     - Sorting makes the tree order-independent, which is useful for bundles.
     - Order-independence means the root does not encode artifact ordering.
 
-    Time:  O(k log k) for sort + O(k) hashing levels
-    Space: O(k)
     """
 
     nodes: List[str] = sorted(str(x) for x in leaves if str(x))

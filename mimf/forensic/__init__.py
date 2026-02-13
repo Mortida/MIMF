@@ -16,16 +16,13 @@ from .bundle import (  # noqa: F401
     verify_forensic_bundle,
     verify_forensic_bundle_details,
 )
-
 from .custody import (  # noqa: F401
+    accept_transfer_receipt,
     append_custody_event,
     create_transfer_receipt,
-    accept_transfer_receipt,
     verify_custody_addendum,
 )
-
 from .diff import diff_bundles  # noqa: F401
-
 from .timeline import (  # noqa: F401
     TimelineItem,
     load_bundle_timeline,

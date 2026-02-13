@@ -8,12 +8,28 @@ Security notes:
 - Keep transforms deterministic and strictly bounded.
 """
 
-from .normalizer import build_normalization_plan, normalize_runtime_object, select_normalizer, NormalizationDispatch
-from .pdf_normalizer import build_pdf_normalization_plan, normalize_pdf_metadata
-from .json_normalizer import build_json_normalization_plan, normalize_json_metadata
+from .export_policy import (
+    ExportPolicyResult,
+    apply_normalized_export_policy,
+    redact_normalized_document,
+)
 from .generic_normalizer import build_generic_normalization_plan, normalize_generic_metadata
-from .schema import SchemaContract, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_TAG, build_document, validate_normalized_document
-from .export_policy import apply_normalized_export_policy, redact_normalized_document, ExportPolicyResult
+from .json_normalizer import build_json_normalization_plan, normalize_json_metadata
+from .normalizer import (
+    NormalizationDispatch,
+    build_normalization_plan,
+    normalize_runtime_object,
+    select_normalizer,
+)
+from .pdf_normalizer import build_pdf_normalization_plan, normalize_pdf_metadata
+from .schema import (
+    SCHEMA_NAME,
+    SCHEMA_TAG,
+    SCHEMA_VERSION,
+    SchemaContract,
+    build_document,
+    validate_normalized_document,
+)
 
 __all__ = [
     "NormalizationDispatch",

@@ -1,9 +1,9 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
 from mimf.core.runtime.context import RuntimeContext
-from mimf.core.runtime.mutation import MutationPlan, MutationExecutor, _validate
+from mimf.core.runtime.mutation import MutationExecutor, MutationPlan, _validate
 from mimf.core.runtime.object import RuntimeObject
 
 

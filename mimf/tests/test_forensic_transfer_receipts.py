@@ -6,7 +6,7 @@ from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.inspection import Inspector
 from mimf.forensic import build_forensic_bundle
 from mimf.forensic.bundle import verify_forensic_bundle_details
-from mimf.forensic.custody import create_transfer_receipt, accept_transfer_receipt
+from mimf.forensic.custody import accept_transfer_receipt, create_transfer_receipt
 from mimf.forensic.signing import generate_ed25519_keypair
 
 

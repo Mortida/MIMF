@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 from uuid import uuid4
@@ -15,7 +15,6 @@ from .signing import (
     signing_metadata,
     verify_detached_ed25519,
 )
-
 
 CUSTODY_DIR = "custody"
 RECEIPTS_DIR = f"{CUSTODY_DIR}/receipts"
@@ -30,11 +29,7 @@ _TRANSFER_RECEIPT_SCHEMA = {"name": "mimf.transfer_receipt", "version": "1.0"}
 
 
 def _sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
-    """Stream SHA-256 of a file.
-
-    Time:  O(n)
-    Space: O(1)
-    """
+    """Stream SHA-256 of a file."""
 
     import hashlib
 
@@ -54,8 +49,6 @@ def _canonical_payload(payload: Mapping[str, Any]) -> Dict[str, Any]:
     Security notes:
     - Canonicalization reduces signature ambiguity.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     # json.dumps(sort_keys=True) later will do ordering; we ensure it's plain types.
@@ -67,8 +60,6 @@ def _load_manifest_base(root: Path) -> Tuple[str, Optional[str], Optional[str], 
 
     Returns: (bundle_id, merkle_root, event_chain_tip, manifest_sha256)
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     manifest_path = root / "manifest.json"
@@ -84,11 +75,7 @@ def _load_manifest_base(root: Path) -> Tuple[str, Optional[str], Optional[str], 
 
 
 def _load_addendum(root: Path) -> Dict[str, Any]:
-    """Load addendum.json if present, else return a minimal structure.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Load addendum.json if present, else return a minimal structure."""
 
     addendum_file = root / ADDENDUM_JSON
     if not addendum_file.exists():
@@ -97,11 +84,7 @@ def _load_addendum(root: Path) -> Dict[str, Any]:
 
 
 def _compute_custody_merkle(entries: Mapping[str, str], receipts: Mapping[str, str]) -> str:
-    """Compute custody Merkle root over entries + receipts in stored order.
-
-    Time:  O(k)
-    Space: O(k)
-    """
+    """Compute custody Merkle root over entries + receipts in stored order."""
 
     leaf_hashes: List[str] = []
     # Preserve insertion order: dict preserves order in Python 3.7+
@@ -125,8 +108,6 @@ def _write_addendum(
     Security notes:
     - Signature (if present) covers only the canonical addendum payload (excluding authenticity).
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     payload = dict(addendum_payload)
@@ -137,9 +118,9 @@ def _write_addendum(
         signed_claims = _canonical_payload(payload)
         meta["signed_payload"] = signed_claims
         if embed_public_key:
-            meta["public_key_pem"] = export_public_key_pem_from_private(signing_private_key_path).decode(
-                "utf-8", errors="replace"
-            )
+            meta["public_key_pem"] = export_public_key_pem_from_private(
+                signing_private_key_path
+            ).decode("utf-8", errors="replace")
 
         sig_b64 = sign_detached_ed25519(signing_private_key_path, signed_claims)
         (root / ADDENDUM_SIG).write_text(sig_b64 + "\n", encoding="utf-8")
@@ -154,7 +135,9 @@ def _write_addendum(
         if embed_public_key:
             (root / ADDENDUM_PUBKEY).write_text(meta.get("public_key_pem") + "\n", encoding="utf-8")
 
-    (root / ADDENDUM_JSON).write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    (root / ADDENDUM_JSON).write_text(
+        json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
     return sig_path
 
 
@@ -189,13 +172,13 @@ def append_custody_event(
     - Treat note/action as untrusted strings; we store them as data only.
     - If signing is enabled, signatures are detached and cover a canonical payload.
 
-    Time:  O(k + total_entries_bytes)
-    Space: O(1)
     """
 
     root = Path(bundle_dir)
 
-    base_bundle_id, base_merkle_root, base_event_tip, base_manifest_sha256 = _load_manifest_base(root)
+    base_bundle_id, base_merkle_root, base_event_tip, base_manifest_sha256 = _load_manifest_base(
+        root
+    )
 
     custody_dir = root / CUSTODY_DIR
     custody_dir.mkdir(parents=True, exist_ok=True)
@@ -210,7 +193,9 @@ def append_custody_event(
     existing_entries: Dict[str, str] = {str(k): str(v) for k, v in entries.items()}
     existing_receipts: Dict[str, str] = {str(k): str(v) for k, v in receipts.items()}
 
-    prev_entry_sha256: Optional[str] = custody.get("tip_sha256") if isinstance(custody.get("tip_sha256"), str) else None
+    prev_entry_sha256: Optional[str] = (
+        custody.get("tip_sha256") if isinstance(custody.get("tip_sha256"), str) else None
+    )
 
     # Write new entry.
     now = datetime.now(UTC)
@@ -235,7 +220,9 @@ def append_custody_event(
         "prev_entry_sha256": prev_entry_sha256,
     }
 
-    entry_path.write_text(json.dumps(entry_obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    entry_path.write_text(
+        json.dumps(entry_obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
     entry_sha = _sha256_file(entry_path)
 
     existing_entries[entry_rel] = entry_sha
@@ -319,14 +306,13 @@ def create_transfer_receipt(
     - Does not rewrite base bundle artifacts.
     - Receipt is additive evidence.
 
-    Time:  O(k)
-    Space: O(k)
     """
 
     root = Path(bundle_dir)
-    base_bundle_id, base_merkle_root, base_event_tip, base_manifest_sha256 = _load_manifest_base(root)
+    base_bundle_id, base_merkle_root, base_event_tip, base_manifest_sha256 = _load_manifest_base(
+        root
+    )
 
-    custody_dir = root / CUSTODY_DIR
     (root / RECEIPTS_DIR).mkdir(parents=True, exist_ok=True)
 
     add = _load_addendum(root)
@@ -361,7 +347,9 @@ def create_transfer_receipt(
         },
     }
 
-    sender_sig_b64 = sign_detached_ed25519(signing_private_key_path, _canonical_payload(transfer_payload))
+    sender_sig_b64 = sign_detached_ed25519(
+        signing_private_key_path, _canonical_payload(transfer_payload)
+    )
 
     receipt_obj: Dict[str, Any] = {
         "schema": _TRANSFER_RECEIPT_SCHEMA,
@@ -378,12 +366,14 @@ def create_transfer_receipt(
 
     if embed_sender_public_key:
         receipt_obj["public_keys"] = {
-            "sender_public_key_pem": export_public_key_pem_from_private(signing_private_key_path).decode(
-                "utf-8", errors="replace"
-            )
+            "sender_public_key_pem": export_public_key_pem_from_private(
+                signing_private_key_path
+            ).decode("utf-8", errors="replace")
         }
 
-    receipt_path.write_text(json.dumps(receipt_obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    receipt_path.write_text(
+        json.dumps(receipt_obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
     receipt_sha = _sha256_file(receipt_path)
 
     existing_receipts[receipt_rel] = receipt_sha
@@ -421,11 +411,7 @@ def create_transfer_receipt(
 
 
 def _find_latest_pending_receipt(root: Path) -> Optional[str]:
-    """Find the latest receipt missing a receiver signature.
-
-    Time:  O(r)
-    Space: O(1)
-    """
+    """Find the latest receipt missing a receiver signature."""
 
     add = _load_addendum(root)
     custody = add.get("custody") if isinstance(add.get("custody"), dict) else {}
@@ -454,11 +440,7 @@ def accept_transfer_receipt(
     signing_private_key_path: str,
     embed_receiver_public_key: bool = False,
 ) -> TransferReceiptAcceptResult:
-    """Accept a transfer receipt by adding a receiver signature.
-
-    Time:  O(k)
-    Space: O(k)
-    """
+    """Accept a transfer receipt by adding a receiver signature."""
 
     root = Path(bundle_dir)
     if receipt_relpath is None:
@@ -490,7 +472,9 @@ def accept_transfer_receipt(
         "receiver_actor_id": receiver_actor_id,
     }
 
-    receiver_sig_b64 = sign_detached_ed25519(signing_private_key_path, _canonical_payload(receiver_payload))
+    receiver_sig_b64 = sign_detached_ed25519(
+        signing_private_key_path, _canonical_payload(receiver_payload)
+    )
 
     sigs = dict(sigs)
     sigs["receiver"] = {
@@ -503,12 +487,14 @@ def accept_transfer_receipt(
     if embed_receiver_public_key:
         pk = obj.get("public_keys") if isinstance(obj.get("public_keys"), dict) else {}
         pk = dict(pk)
-        pk["receiver_public_key_pem"] = export_public_key_pem_from_private(signing_private_key_path).decode(
-            "utf-8", errors="replace"
-        )
+        pk["receiver_public_key_pem"] = export_public_key_pem_from_private(
+            signing_private_key_path
+        ).decode("utf-8", errors="replace")
         obj["public_keys"] = pk
 
-    receipt_path.write_text(json.dumps(obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    receipt_path.write_text(
+        json.dumps(obj, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
     receipt_sha = _sha256_file(receipt_path)
 
     # Update addendum receipt hash.
@@ -567,8 +553,6 @@ def _verify_transfer_receipt_signatures(
 
     Returns: (sender_ok, receiver_ok, errors, receiver_present)
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     errors: List[str] = []
@@ -590,7 +574,9 @@ def _verify_transfer_receipt_signatures(
             sender_ok = False
             errors.append("missing sender signature")
         else:
-            sender_ok = verify_detached_ed25519(sender_pubkey, _canonical_payload(transfer), str(sender.get("signature_b64")))
+            sender_ok = verify_detached_ed25519(
+                sender_pubkey, _canonical_payload(transfer), str(sender.get("signature_b64"))
+            )
             if sender_ok is False:
                 errors.append("sender signature invalid")
 
@@ -603,8 +589,12 @@ def _verify_transfer_receipt_signatures(
         else:
             receiver_payload = {
                 "transfer": _canonical_payload(transfer),
-                "sender_signature_b64": (sender.get("signature_b64") if isinstance(sender, dict) else None),
-                "receiver_actor_id": receiver.get("actor_id") if isinstance(receiver, dict) else None,
+                "sender_signature_b64": (
+                    sender.get("signature_b64") if isinstance(sender, dict) else None
+                ),
+                "receiver_actor_id": receiver.get("actor_id")
+                if isinstance(receiver, dict)
+                else None,
             }
             receiver_ok = verify_detached_ed25519(
                 receiver_pubkey,
@@ -632,8 +622,6 @@ def verify_custody_addendum(
     - optional addendum signature verification
     - optional receipt signature verification if sender/receiver public keys are provided
 
-    Time:  O(total_custody_bytes)
-    Space: O(1)
     """
 
     root = Path(bundle_dir)
@@ -672,8 +660,12 @@ def verify_custody_addendum(
 
     receipt_pending_count = 0
 
-    sender_pub = maybe_load_public_key_pem(sender_public_key_path) if sender_public_key_path else None
-    receiver_pub = maybe_load_public_key_pem(receiver_public_key_path) if receiver_public_key_path else None
+    sender_pub = (
+        maybe_load_public_key_pem(sender_public_key_path) if sender_public_key_path else None
+    )
+    receiver_pub = (
+        maybe_load_public_key_pem(receiver_public_key_path) if receiver_public_key_path else None
+    )
 
     receipt_sender_sig_ok: Optional[bool] = None
     receipt_receiver_sig_ok: Optional[bool] = None
@@ -712,7 +704,9 @@ def verify_custody_addendum(
                 receipt_sender_sig_ok = (receipt_sender_sig_ok is not False) and (s_ok is not False)
             if receiver_pub is not None and receiver_present:
                 verified_receiver_any = True
-                receipt_receiver_sig_ok = (receipt_receiver_sig_ok is not False) and (r_ok is not False)
+                receipt_receiver_sig_ok = (receipt_receiver_sig_ok is not False) and (
+                    r_ok is not False
+                )
 
         except Exception:
             # Non-fatal: hash verification already covers tampering.
@@ -735,7 +729,7 @@ def verify_custody_addendum(
     sig_present = bool((root / ADDENDUM_SIG).exists())
     sig_ok: Optional[bool] = None
     sig_trusted = False
-    signer_id = ((add.get("authenticity") or {}).get("signer_id"))
+    signer_id = (add.get("authenticity") or {}).get("signer_id")
 
     if sig_present:
         sig_b64 = (root / ADDENDUM_SIG).read_text(encoding="utf-8").strip()

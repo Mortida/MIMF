@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import mimetypes
 import fnmatch
+import mimetypes
 import os
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,8 +15,6 @@ class FileInfo:
     - File contents are untrusted. Selection should not execute code.
     - Sniffing reads only a small prefix (bounded).
 
-    Time:  O(1) (stat + small prefix read)
-    Space: O(1)
     """
 
     path: str
@@ -33,8 +31,6 @@ def sniff_file_info(path: str, *, prefix_bytes: int = 512) -> FileInfo:
     - Reads at most prefix_bytes from the file.
     - Never trusts filename alone.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     abs_path = os.path.abspath(path)
@@ -84,11 +80,7 @@ def sniff_file_info(path: str, *, prefix_bytes: int = 512) -> FileInfo:
 
 
 def _magic_mime(prefix: bytes) -> Optional[str]:
-    """Detect mime from common magic headers.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Detect mime from common magic headers."""
 
     if prefix.startswith(b"%PDF-"):
         return "application/pdf"
@@ -113,8 +105,6 @@ def _json_heuristic_mime(prefix: bytes) -> Optional[str]:
     Security notes:
     - Does not parse JSON; only checks leading non-whitespace.
 
-    Time:  O(k) where k=len(prefix) (bounded)
-    Space: O(1)
     """
 
     # Strip BOM + whitespace
@@ -137,8 +127,6 @@ def mime_matches(pattern: str, mime: str) -> bool:
     - "type/*" matches any subtype
     - exact match
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     pat = pattern.strip().lower()

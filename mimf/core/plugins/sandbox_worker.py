@@ -3,11 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
-
 from datetime import date, datetime
 from pathlib import Path
 from uuid import UUID
+
 
 def _json_default(o):
     if isinstance(o, (datetime, date)):
@@ -39,8 +38,6 @@ def _apply_resource_limits() -> None:
     Security notes:
     - Limits are best-effort and platform-specific. On Windows, resource module may be missing.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     try:
@@ -84,8 +81,6 @@ def main(argv: list[str] | None = None) -> int:
 
     Loads built-in plugins, selects plugin by id, inspects file, prints JSON.
 
-    Time:  dominated by inspector
-    Space: inspector-dependent
     """
 
     _apply_resource_limits()
@@ -113,11 +108,20 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(plugin, FileInspectorPlugin):
             raise TypeError(f"plugin_not_file_inspector: {plugin_id}")
         obj = plugin.inspect_file(path, object_id=args.object_id)
-        print(json.dumps({"ok": True, "plugin_id": plugin_id, "runtime_object": obj.snapshot()}, default=_json_default))
+        print(
+            json.dumps(
+                {"ok": True, "plugin_id": plugin_id, "runtime_object": obj.snapshot()},
+                default=_json_default,
+            )
+        )
         return 0
     except Exception as e:
         # Do not print tracebacks by default (may leak paths). Keep it simple.
-        print(json.dumps({"ok": False, "plugin_id": plugin_id, "error": str(e)}, default=_json_default))
+        print(
+            json.dumps(
+                {"ok": False, "plugin_id": plugin_id, "error": str(e)}, default=_json_default
+            )
+        )
         return 1
 
 

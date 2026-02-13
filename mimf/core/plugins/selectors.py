@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from .file_info import sniff_file_info, FileInfo
-
+from .file_info import FileInfo, sniff_file_info
 from .file_inspector import FileInspectorPlugin
 from .registry import PluginRegistry
 
@@ -22,8 +21,6 @@ def select_file_inspector(registry: PluginRegistry, path: str) -> FileInspectorP
     - Plugins are code execution; only load trusted plugins.
     - Defensive: a buggy plugin match_score must not break selection.
 
-    Time:  O(p) where p is number of registered plugins (plus O(1) sniff)
-    Space: O(p) for candidate list
     """
 
     info: FileInfo = sniff_file_info(path)

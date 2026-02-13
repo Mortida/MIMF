@@ -27,7 +27,9 @@ def test_bundle_diff_detects_changed_artifact(tmp_path: Path) -> None:
     # Build a second bundle, then tamper with normalized.json
     out_b = tmp_path / "bundle_b"
     build_forensic_bundle(input_path=str(p), runtime_object=obj, context=ctx, out_dir=str(out_b))
-    (out_b / "normalized.json").write_text((out_b / "normalized.json").read_text(encoding="utf-8") + "\n#tamper\n", encoding="utf-8")
+    (out_b / "normalized.json").write_text(
+        (out_b / "normalized.json").read_text(encoding="utf-8") + "\n#tamper\n", encoding="utf-8"
+    )
 
     d = diff_bundles(str(out_a), str(out_b), limit=50)
     assert "normalized.json" in (d.get("artifacts") or {}).get("changed", [])

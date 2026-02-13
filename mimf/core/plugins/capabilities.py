@@ -14,8 +14,6 @@ class FileInspectorCapabilities:
     - Capabilities are declared by plugin authors; treat them as hints.
     - Selection must remain deterministic even if a plugin misdeclares.
 
-    Time:  O(a+b) for matching where a=#mime patterns, b=#extensions
-    Space: O(1)
     """
 
     supported_mime_types: FrozenSet[str] = field(default_factory=lambda: frozenset({"*"}))
@@ -28,11 +26,7 @@ class FileInspectorCapabilities:
     priority_bias: int = 0
 
     def matches(self, info: FileInfo) -> bool:
-        """Return True if this capability set is compatible with FileInfo.
-
-        Time:  O(a+b) bounded by number of patterns
-        Space: O(1)
-        """
+        """Return True if this capability set is compatible with FileInfo."""
 
         if self.max_size_bytes is not None and info.size_bytes > self.max_size_bytes:
             return False

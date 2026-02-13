@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Dict, FrozenSet
 from datetime import datetime
+from typing import Any, Dict, FrozenSet
 
 
 @dataclass(frozen=True)

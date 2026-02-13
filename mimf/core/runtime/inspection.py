@@ -1,7 +1,9 @@
-from typing import Dict, Any
-from .object import RuntimeObject
+from typing import Any, Dict
+
 from .context import RuntimeContext
 from .events import InspectionEvent
+from .object import RuntimeObject
+
 
 class Inspector:
     @staticmethod
@@ -18,10 +20,9 @@ class Inspector:
             "metadata": dict(obj.metadata),
             "origin": obj.origin,
             "snapshot_hash": obj.snapshot_hash,
-            "created_at": obj.created_at.isoformat()
+            "created_at": obj.created_at.isoformat(),
         }
 
         event = InspectionEvent(object_id=obj.object_id, snapshot=snapshot)
         context.emit_event(event)
         return event
-

@@ -1,9 +1,10 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
+
 import pytest
 
 from mimf.core.policy_engine.policy_context import PolicyContext
-from mimf.core.runtime.object import RuntimeObject
 from mimf.core.runtime.mutation import MutationPlan
+from mimf.core.runtime.object import RuntimeObject
 
 
 def _make_obj() -> RuntimeObject:

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
+from mimf.core.policy_engine.normalized_export_rule import NormalizedExportRule
 from mimf.core.policy_engine.policy_context import PolicyContext
 from mimf.core.policy_engine.policy_engine import PolicyEngine
-from mimf.core.policy_engine.policy_models import DecisionStatus, PolicyDecision
-from mimf.core.policy_engine.normalized_export_rule import NormalizedExportRule
+from mimf.core.policy_engine.policy_models import PolicyDecision
 from mimf.core.security.boundaries import SecurityBoundary
 from mimf.core.security.capabilities import Capability
-
 
 _IDENTIFYING_FIELDS: Set[str] = {"title", "author", "subject", "keywords"}
 _TOOLING_FIELDS: Set[str] = {"creator", "producer"}
@@ -26,11 +25,7 @@ class ExportPolicyResult:
 
 
 def _presence_from_normalized(normalized: Mapping[str, Any]) -> Dict[str, bool]:
-    """Compute field presence map for policy evaluation.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Compute field presence map for policy evaluation."""
 
     doc = normalized.get("document") if isinstance(normalized.get("document"), Mapping) else {}
     out: Dict[str, bool] = {}
@@ -52,13 +47,13 @@ def _deep_copy_document(normalized: Mapping[str, Any]) -> Dict[str, Any]:
     return out
 
 
-def redact_normalized_document(normalized: Mapping[str, Any], *, redact_fields: Iterable[str]) -> Tuple[Dict[str, Any], List[str]]:
+def redact_normalized_document(
+    normalized: Mapping[str, Any], *, redact_fields: Iterable[str]
+) -> Tuple[Dict[str, Any], List[str]]:
     """Return a redacted copy of a normalized document.
 
     Redaction sets the targeted fields to None under normalized["document"].
 
-    Time:  O(r)
-    Space: O(1) extra (copy is O(1) sized)
     """
 
     redacted_fields = sorted({str(f) for f in redact_fields})
@@ -92,8 +87,6 @@ def apply_normalized_export_policy(
     - This is an *export* control, not a mutation control.
     - Use strict=True to deny instead of redacting.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     raw_caps = list(actor_capabilities or [])
@@ -115,7 +108,14 @@ def apply_normalized_export_policy(
         )
 
     # Build a tiny plan-like object so PolicyContext has a stable trace_id.
-    plan = type("ExportPlan", (), {"plan_id": f"export-{int(datetime.now(UTC).timestamp())}", "mutation_type": "export:normalized"})()
+    plan = type(
+        "ExportPlan",
+        (),
+        {
+            "plan_id": f"export-{int(datetime.now(UTC).timestamp())}",
+            "mutation_type": "export:normalized",
+        },
+    )()
 
     # Compute presence map from the normalized payload.
     presence = _presence_from_normalized(normalized)
@@ -125,7 +125,9 @@ def apply_normalized_export_policy(
 
     ctx = PolicyContext.from_runtime(
         plan=plan,
-        target=type("ExportTarget", (), {"object_id": "", "labels": frozenset(target_labels or [])})(),
+        target=type(
+            "ExportTarget", (), {"object_id": "", "labels": frozenset(target_labels or [])}
+        )(),
         metadata={
             "boundary": boundary,
             "actor_capabilities": norm_caps,

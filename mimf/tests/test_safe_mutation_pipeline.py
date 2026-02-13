@@ -1,11 +1,11 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
 from mimf.core.policy_engine.policy_models import DecisionStatus
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.events import InspectionEvent, PolicyEvaluationEvent
-from mimf.core.runtime.mutation import MutationPlan, MutationExecutor
+from mimf.core.runtime.mutation import MutationExecutor, MutationPlan
 from mimf.core.runtime.mutation_pipeline import SafeMutationPipeline
 from mimf.core.runtime.object import RuntimeObject
 
@@ -61,9 +61,7 @@ def _make_plan():
 
 
 def test_pipeline_emits_inspection_then_policy_event_allow_executes():
-    engine = _FakePolicyEngine(
-        _Decision(DecisionStatus.ALLOW, "p-allow", "ok", "t-1")
-    )
+    engine = _FakePolicyEngine(_Decision(DecisionStatus.ALLOW, "p-allow", "ok", "t-1"))
     pipeline = SafeMutationPipeline(policy_engine=engine, executor_cls=_ExecutorSpy)
 
     ctx = RuntimeContext(context_id="ctx-1", actor_id="actor-1")
@@ -80,9 +78,7 @@ def test_pipeline_emits_inspection_then_policy_event_allow_executes():
 
 
 def test_pipeline_denies_and_does_not_execute_executor():
-    engine = _FakePolicyEngine(
-        _Decision(DecisionStatus.DENY, "p-deny", "no", "t-2")
-    )
+    engine = _FakePolicyEngine(_Decision(DecisionStatus.DENY, "p-deny", "no", "t-2"))
     pipeline = SafeMutationPipeline(policy_engine=engine, executor_cls=_ExecutorSpy)
 
     ctx = RuntimeContext(context_id="ctx-1", actor_id="actor-1")

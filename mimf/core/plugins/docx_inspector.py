@@ -1,14 +1,11 @@
-from __future__ import annotations
-
 """
-Backwards-compatibility shim.
+Backward-compatible import path.
 
-Canonical location (built-in plugins live here):
+Prefer importing from:
     mimf.core.plugins.builtin.docx_inspector
-
-This module remains to avoid breaking any old imports:
-    mimf.core.plugins.docx_inspector
 """
+
+from __future__ import annotations
 
 from .builtin.docx_inspector import DocxFileInspector
 

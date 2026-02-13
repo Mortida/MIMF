@@ -1,24 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from mimf.core.plugins.file_info import FileInfo
 from mimf.core.runtime.mutation import MutationPlan
 from mimf.core.runtime.object import RuntimeObject
 
-from .json_normalizer import build_json_normalization_plan, normalize_json_metadata
 from .generic_normalizer import build_generic_normalization_plan, normalize_generic_metadata
+from .json_normalizer import build_json_normalization_plan, normalize_json_metadata
 from .pdf_normalizer import build_pdf_normalization_plan, normalize_pdf_metadata
 
 
 @dataclass(frozen=True)
 class NormalizationDispatch:
-    """Outcome of selecting a normalizer.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Outcome of selecting a normalizer."""
 
     normalizer_id: str
     schema_version: str
@@ -39,8 +35,6 @@ def select_normalizer(info: FileInfo) -> NormalizationDispatch:
     Security notes:
     - Normalizers are pure functions (no file I/O) and should be deterministic.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     mt = (info.mime_type or "").lower()
@@ -52,13 +46,13 @@ def select_normalizer(info: FileInfo) -> NormalizationDispatch:
     return NormalizationDispatch(normalizer_id="generic", schema_version="mimf.document@1.0")
 
 
-def normalize_runtime_object(obj: RuntimeObject, info: FileInfo) -> Tuple[NormalizationDispatch, Dict[str, Any], Dict[str, Any]]:
+def normalize_runtime_object(
+    obj: RuntimeObject, info: FileInfo
+) -> Tuple[NormalizationDispatch, Dict[str, Any], Dict[str, Any]]:
     """Normalize an inspected RuntimeObject into a stable schema.
 
     Returns: (dispatch, normalized, sources)
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     dispatch = select_normalizer(info)
@@ -80,11 +74,7 @@ def build_normalization_plan(
     *,
     plan_id: Optional[str] = None,
 ) -> Tuple[NormalizationDispatch, MutationPlan]:
-    """Build a normalization MutationPlan for an inspected RuntimeObject.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Build a normalization MutationPlan for an inspected RuntimeObject."""
 
     dispatch = select_normalizer(info)
     if dispatch.normalizer_id == "pdf":

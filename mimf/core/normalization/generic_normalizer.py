@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict, Mapping, Optional
 
 from mimf.core.plugins.file_info import FileInfo
@@ -13,11 +13,7 @@ from .schema import build_document
 
 @dataclass(frozen=True)
 class NormalizationResult:
-    """Structured output of a normalization routine.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Structured output of a normalization routine."""
 
     schema_version: str
     normalized: Dict[str, Any]
@@ -39,8 +35,6 @@ def normalize_generic_metadata(obj: RuntimeObject, info: FileInfo) -> Normalizat
     - Never parses file content.
     - Treats all values as untrusted and best-effort.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     md: Mapping[str, Any] = getattr(obj, "metadata", {}) or {}
@@ -48,10 +42,14 @@ def normalize_generic_metadata(obj: RuntimeObject, info: FileInfo) -> Normalizat
     sha256 = md.get("sha256") if isinstance(md.get("sha256"), str) else None
     size_bytes = md.get("size_bytes") if isinstance(md.get("size_bytes"), int) else None
     extension = md.get("extension") if isinstance(md.get("extension"), str) else None
-    is_bin = md.get("is_probably_binary") if isinstance(md.get("is_probably_binary"), bool) else None
+    is_bin = (
+        md.get("is_probably_binary") if isinstance(md.get("is_probably_binary"), bool) else None
+    )
 
-    content_type = (info.mime_type or "application/octet-stream")
-    doc_format = (info.extension.lstrip(".") or "unknown") if isinstance(info.extension, str) else "unknown"
+    content_type = info.mime_type or "application/octet-stream"
+    doc_format = (
+        (info.extension.lstrip(".") or "unknown") if isinstance(info.extension, str) else "unknown"
+    )
 
     normalized = build_document(
         doc_format=doc_format,
@@ -85,7 +83,9 @@ def normalize_generic_metadata(obj: RuntimeObject, info: FileInfo) -> Normalizat
         },
     }
 
-    return NormalizationResult(schema_version="mimf.document@1.0", normalized=normalized, sources=sources)
+    return NormalizationResult(
+        schema_version="mimf.document@1.0", normalized=normalized, sources=sources
+    )
 
 
 def build_generic_normalization_plan(
@@ -94,11 +94,7 @@ def build_generic_normalization_plan(
     *,
     plan_id: Optional[str] = None,
 ) -> MutationPlan:
-    """Build a MutationPlan that attaches normalized generic metadata.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Build a MutationPlan that attaches normalized generic metadata."""
 
     res = normalize_generic_metadata(obj, info)
     now = datetime.now(UTC)

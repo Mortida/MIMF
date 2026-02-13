@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mimf.core.normalization import build_document, apply_normalized_export_policy
+from mimf.core.normalization import apply_normalized_export_policy, build_document
 from mimf.core.security.boundaries import SecurityBoundary
 
 

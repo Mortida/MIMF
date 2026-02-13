@@ -1,11 +1,11 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
 from mimf.core.runtime.context import RuntimeContext
+from mimf.core.runtime.events import InspectionEvent
 from mimf.core.runtime.inspection import Inspector
 from mimf.core.runtime.object import RuntimeObject
-from mimf.core.runtime.events import InspectionEvent
 
 
 def test_inspector_emits_inspection_event_and_chain_is_valid():

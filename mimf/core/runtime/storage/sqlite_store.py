@@ -3,18 +3,15 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-from ..context import RuntimeContext
-from ..object import RuntimeObject
-from ..events import RuntimeEvent
-from ..event_factory import event_from_record
-
 from datetime import date, datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 from uuid import UUID
+
+from ..context import RuntimeContext
+from ..event_factory import event_from_record
+from ..object import RuntimeObject
+
 
 def _json_default(o):
     if isinstance(o, (datetime, date)):
@@ -45,29 +42,19 @@ def _json_loads(text: str) -> Any:
 
     Security: input is untrusted; json.loads is safe for data but may be large.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     return json.loads(text)
 
 
 def _dt_to_iso(dt: datetime) -> str:
-    """Serialize datetime to ISO8601.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Serialize datetime to ISO8601."""
 
     return dt.isoformat()
 
 
 def _dt_from_iso(text: str) -> datetime:
-    """Parse ISO8601 datetime.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Parse ISO8601 datetime."""
 
     return datetime.fromisoformat(text)
 
@@ -81,7 +68,6 @@ class SQLiteRuntimeStore:
     - This store does NOT encrypt data at rest.
       If you need encryption, place the DB on an encrypted volume.
 
-    Complexity
     - save_context: O(o + e) inserts, where o=#objects, e=#events
     - load_context: O(o + e)
     - Storage size: O(total payload sizes)
@@ -93,22 +79,14 @@ class SQLiteRuntimeStore:
         self.db_path = Path(self.db_path)
 
     def connect(self) -> sqlite3.Connection:
-        """Open a SQLite connection.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Open a SQLite connection."""
 
         con = sqlite3.connect(str(self.db_path))
         con.execute("PRAGMA foreign_keys = ON")
         return con
 
     def init_schema(self) -> None:
-        """Create tables if missing.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Create tables if missing."""
 
         with self.connect() as con:
             con.executescript(
@@ -154,8 +132,6 @@ class SQLiteRuntimeStore:
 
         Security: ctx is trusted in-process; DB writes are controlled.
 
-        Time:  O(o + e)
-        Space: O(1) extra (streaming inserts)
         """
 
         self.init_schema()
@@ -216,7 +192,6 @@ class SQLiteRuntimeStore:
 
             con.commit()
 
-    
     def list_contexts(
         self,
         *,
@@ -241,8 +216,6 @@ class SQLiteRuntimeStore:
         Security notes:
         - Inputs are treated as untrusted; query is parameterized.
 
-        Time:  O(limit)
-        Space: O(limit)
         """
 
         self.init_schema()
@@ -303,6 +276,7 @@ class SQLiteRuntimeStore:
             }
             for r in rows
         ]
+
     def load_context(self, context_id: str) -> RuntimeContext:
         """Load a RuntimeContext and reconstruct objects/events.
 
@@ -310,8 +284,6 @@ class SQLiteRuntimeStore:
         - Treat DB content as untrusted.
         - Event reconstruction is whitelisted by type.
 
-        Time:  O(o + e)
-        Space: O(o + e)
         """
 
         self.init_schema()

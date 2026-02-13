@@ -4,7 +4,7 @@ import hashlib
 import os
 import re
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict, Optional, Tuple
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -20,8 +20,6 @@ def _sha256_file(path: str, *, chunk_size: int = 1024 * 1024) -> str:
     Security notes:
     - Streaming avoids loading untrusted files into memory.
 
-    Time:  O(n) where n is file size
-    Space: O(1)
     """
 
     h = hashlib.sha256()
@@ -40,8 +38,6 @@ def _read_prefix(path: str, *, n: int) -> bytes:
     Security notes:
     - Bounded read.
 
-    Time:  O(1) (bounded)
-    Space: O(1)
     """
 
     with open(path, "rb") as f:
@@ -54,8 +50,6 @@ def _read_suffix(path: str, *, n: int) -> bytes:
     Security notes:
     - Bounded read.
 
-    Time:  O(1) (bounded)
-    Space: O(1)
     """
 
     with open(path, "rb") as f:
@@ -72,8 +66,6 @@ def _parse_pdf_version(prefix: bytes) -> Optional[str]:
     Security notes:
     - Does not attempt to parse the PDF structure.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     if not prefix.startswith(b"%PDF-"):
@@ -99,8 +91,6 @@ def _strip_control_chars(text: str, *, max_len: int) -> str:
     Security notes:
     - PDF metadata can be attacker-controlled. We strip control chars and bound length.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     out = []
@@ -117,13 +107,13 @@ def _strip_control_chars(text: str, *, max_len: int) -> str:
     return "".join(out)
 
 
-def _parse_pdf_literal_string(data: bytes, start: int, *, max_bytes: int) -> Tuple[Optional[bytes], int]:
+def _parse_pdf_literal_string(
+    data: bytes, start: int, *, max_bytes: int
+) -> Tuple[Optional[bytes], int]:
     """Parse a PDF literal string starting at `start` (expects '(').
 
     Supports nested parentheses and common backslash escapes.
 
-    Time:  O(k) where k is parsed bytes (bounded)
-    Space: O(k)
     """
 
     if start >= len(data) or data[start] != ord("("):
@@ -190,12 +180,10 @@ def _parse_pdf_literal_string(data: bytes, start: int, *, max_bytes: int) -> Tup
     return bytes(out), i
 
 
-def _parse_pdf_hex_string(data: bytes, start: int, *, max_bytes: int) -> Tuple[Optional[bytes], int]:
-    """Parse a PDF hex string starting at `start` (expects '<').
-
-    Time:  O(k) (bounded)
-    Space: O(k)
-    """
+def _parse_pdf_hex_string(
+    data: bytes, start: int, *, max_bytes: int
+) -> Tuple[Optional[bytes], int]:
+    """Parse a PDF hex string starting at `start` (expects '<')."""
 
     if start >= len(data) or data[start] != ord("<"):
         return None, start
@@ -213,7 +201,11 @@ def _parse_pdf_hex_string(data: bytes, start: int, *, max_bytes: int) -> Tuple[O
             i += 1
             continue
         # accept hex chars
-        if (ord("0") <= b <= ord("9")) or (ord("A") <= b <= ord("F")) or (ord("a") <= b <= ord("f")):
+        if (
+            (ord("0") <= b <= ord("9"))
+            or (ord("A") <= b <= ord("F"))
+            or (ord("a") <= b <= ord("f"))
+        ):
             hex_digits.append(b)
         i += 1
 
@@ -242,8 +234,6 @@ def _extract_info_fields(scan: bytes, *, max_value_bytes: int = 2048) -> Dict[st
     Security notes:
     - Bound scanning and parsing to prevent pathological inputs.
 
-    Time:  O(n * k) where n=len(scan) and k=#keys (small)
-    Space: O(1) aside from extracted values
     """
 
     keys = [
@@ -290,8 +280,6 @@ def _extract_xmp(scan: bytes, *, max_bytes: int = 64 * 1024) -> Optional[bytes]:
 
     Looks for <x:xmpmeta ... </x:xmpmeta>.
 
-    Time:  O(n)
-    Space: O(1) aside from extracted slice
     """
 
     start = scan.find(b"<x:xmpmeta")
@@ -325,8 +313,6 @@ def _strip_xml_tags(text: str, *, max_len: int) -> str:
     - This is NOT a general XML parser.
     - Used only for best-effort extraction on bounded inputs.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     # Remove tags and collapse whitespace.
@@ -356,8 +342,6 @@ def _extract_xmp_fields(xmp_bytes: bytes) -> Dict[str, Any]:
     - Rejects packets containing DTD/entity declarations.
     - Bounds output size and strips control chars.
 
-    Time:  O(n) where n is xmp_bytes length (bounded upstream)
-    Space: O(n)
     """
 
     xml = xmp_bytes.decode("utf-8", errors="replace")
@@ -455,14 +439,14 @@ def _extract_xmp_fields(xmp_bytes: bytes) -> Dict[str, Any]:
         fields["modify_date"] = modify_date
 
     return fields
+
+
 def _find_info_ref(scan: bytes) -> Optional[Tuple[int, int]]:
     """Find a trailer-style /Info indirect reference: /Info <obj> <gen> R.
 
     Security notes:
     - Best-effort pattern match on bounded data; does not parse PDF grammar.
 
-    Time:  O(n)
-    Space: O(1)
     """
 
     idx = scan.find(b"/Info")
@@ -508,15 +492,15 @@ def _find_info_ref(scan: bytes) -> Optional[Tuple[int, int]]:
     return None
 
 
-def _stream_find_bytes(path: str, needle: bytes, *, max_scan_bytes: int, chunk_size: int = 1024 * 1024) -> Optional[int]:
+def _stream_find_bytes(
+    path: str, needle: bytes, *, max_scan_bytes: int, chunk_size: int = 1024 * 1024
+) -> Optional[int]:
     """Stream-scan a file for `needle` and return the first byte offset.
 
     Security notes:
     - Bounded total scan to avoid pathological file sizes.
     - Uses overlap to avoid missing matches across chunk boundaries.
 
-    Time:  O(min(n, max_scan_bytes))
-    Space: O(chunk_size)
     """
 
     if not needle:
@@ -544,11 +528,7 @@ def _stream_find_bytes(path: str, needle: bytes, *, max_scan_bytes: int, chunk_s
 
 
 def _read_window(path: str, offset: int, *, window_bytes: int) -> bytes:
-    """Read a bounded window from a file at a specific offset.
-
-    Time:  O(1) (bounded)
-    Space: O(window_bytes)
-    """
+    """Read a bounded window from a file at a specific offset."""
 
     with open(path, "rb") as f:
         f.seek(max(0, offset))
@@ -572,8 +552,6 @@ def _resolve_info_indirect_object(
     - Bounded scanning and window reads.
     - Does not execute or interpret any PDF actions.
 
-    Time:  O(min(n, max_scan_bytes))
-    Space: O(window_bytes)
     """
 
     header = f"{obj_num} {gen_num} obj".encode("ascii", errors="strict")
@@ -605,9 +583,7 @@ class PdfFileInspector(FileInspectorPlugin):
     - Treat PDF as untrusted; do not execute embedded scripts.
     - Do not fully parse PDF (future work can use hardened parsers in a sandbox).
 
-    Time:
     - inspect_file: O(n) for hashing + O(1) prefix/suffix reads
-    Space:
     - O(1)
     """
 
@@ -635,8 +611,6 @@ class PdfFileInspector(FileInspectorPlugin):
 
         - PDF by magic header (%PDF-) and/or extension (.pdf).
 
-        Time:  O(1)
-        Space: O(1)
         """
 
         return FileInspectorCapabilities(
@@ -659,11 +633,7 @@ class PdfFileInspector(FileInspectorPlugin):
     # --- Selection helpers ---
 
     def can_handle(self, path: str) -> bool:
-        """Legacy path-based compatibility.
-
-        Time:  O(len(path))
-        Space: O(1)
-        """
+        """Legacy path-based compatibility."""
         return path.lower().endswith(".pdf")
 
     def can_handle_file(self, info: FileInfo) -> bool:
@@ -672,19 +642,13 @@ class PdfFileInspector(FileInspectorPlugin):
         Security notes:
         - Does not parse file content.
 
-        Time:  O(1)
-        Space: O(1)
         """
         if info.extension == ".pdf":
             return True
         return info.mime_type.lower() == "application/pdf"
 
     def match_score(self, path: str) -> int:
-        """Legacy scoring (path-only).
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Legacy scoring (path-only)."""
         return 120
 
     def match_score_file(self, info: FileInfo) -> int:
@@ -692,8 +656,6 @@ class PdfFileInspector(FileInspectorPlugin):
 
         Prefers high-confidence magic detection.
 
-        Time:  O(1)
-        Space: O(1)
         """
         score = 110
         if info.extension == ".pdf":
@@ -764,7 +726,11 @@ class PdfFileInspector(FileInspectorPlugin):
             "is_linearized": bool(is_linearized),
             "has_eof_marker": bool(has_eof_marker),
             "info_guess": info_guess,
-            "info_ref": {"present": info_ref is not None, "obj": (info_ref[0] if info_ref else None), "gen": (info_ref[1] if info_ref else None)},
+            "info_ref": {
+                "present": info_ref is not None,
+                "obj": (info_ref[0] if info_ref else None),
+                "gen": (info_ref[1] if info_ref else None),
+            },
             "info_resolved": info_resolved,
             "xmp": xmp_meta,
         }

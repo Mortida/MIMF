@@ -14,8 +14,6 @@ class Actor:
     - Do not trust caller-provided actor_id/capabilities.
     - Capabilities are granted by the server-side key mapping.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     actor_id: str
@@ -35,8 +33,6 @@ def _parse_api_keys(raw: str) -> Dict[str, Actor]:
     - Env var is trusted server configuration.
     - Unknown/invalid entries are ignored (fail-closed by omission).
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     out: Dict[str, Actor] = {}
@@ -61,8 +57,6 @@ def load_auth_config() -> Dict[str, Actor]:
     Security notes:
     - Keep this server-side only.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     return _parse_api_keys(os.environ.get("MIMF_API_KEYS", ""))
@@ -75,8 +69,6 @@ def requires_auth(mapping: Dict[str, Actor]) -> bool:
     - If MIMF_REQUIRE_AUTH=1, always require.
     - Else, require iff at least one API key is configured.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     if os.environ.get("MIMF_REQUIRE_AUTH", "").strip() in {"1", "true", "TRUE", "yes", "YES"}:
@@ -91,8 +83,6 @@ def authenticate(api_key: Optional[str], mapping: Dict[str, Actor]) -> Optional[
     - Uses constant-time comparison to reduce timing side-channels.
     - Returns None on failure.
 
-    Time:  O(k) where k is number of configured keys (small)
-    Space: O(1)
     """
 
     if not api_key:

@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Optional
 
-
 SCHEMA_NAME: str = "mimf.document"
 SCHEMA_VERSION: str = "1.0"
 SCHEMA_TAG: str = f"{SCHEMA_NAME}@{SCHEMA_VERSION}"
@@ -43,8 +42,6 @@ def build_document(
     - Inputs are assumed attacker-controlled strings.
     - This helper is intentionally small and deterministic.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     normalized: Dict[str, Any] = {
@@ -76,8 +73,6 @@ def validate_normalized_document(normalized: Mapping[str, Any]) -> None:
     Security notes:
     - Fail closed: raise ValueError on unexpected shapes.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     if not isinstance(normalized, Mapping):
@@ -103,11 +98,7 @@ def validate_normalized_document(normalized: Mapping[str, Any]) -> None:
 
 @dataclass(frozen=True)
 class SchemaContract:
-    """Schema contract constants.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Schema contract constants."""
 
     name: str = SCHEMA_NAME
     version: str = SCHEMA_VERSION

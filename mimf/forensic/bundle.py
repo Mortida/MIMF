@@ -6,9 +6,9 @@ import platform
 import shutil
 import sys
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from mimf.core.normalization import (
     apply_normalized_export_policy,
@@ -19,20 +19,18 @@ from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.object import RuntimeObject
 from mimf.core.security.boundaries import SecurityBoundary
 
+from .custody import verify_custody_addendum
 from .merkle import merkle_root_hex, sha256_hex
 from .signing import (
+    PUBLIC_KEY_PEM,
     SIGNATURE_JSON,
     SIGNATURE_SIG,
-    PUBLIC_KEY_PEM,
-    sign_detached_ed25519,
-    maybe_load_public_key_pem,
-    verify_detached_ed25519,
     export_public_key_pem_from_private,
+    maybe_load_public_key_pem,
+    sign_detached_ed25519,
     signing_metadata,
+    verify_detached_ed25519,
 )
-
-from .custody import verify_custody_addendum
-
 
 _BUNDLE_SCHEMA = {
     "name": "mimf.forensic_bundle",
@@ -48,8 +46,6 @@ def _safe_basename(path: str) -> str:
     - Prevent directory traversal by discarding directory components.
     - Replace path separators and control characters.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     base = os.path.basename(path)
@@ -65,8 +61,6 @@ def _sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
     Security notes:
     - Streaming avoids loading large files into memory.
 
-    Time:  O(n)
-    Space: O(1)
     """
 
     import hashlib
@@ -118,8 +112,6 @@ def _pdf_date_to_iso(value: Optional[str]) -> Optional[str]:
     Security notes:
     - Input is attacker-controlled. Parser is strict and bounded.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     if not value or not isinstance(value, str):
@@ -165,8 +157,6 @@ def _build_file_summary(
     - Uses redacted/denied normalized output (never raw sensitive fields).
     - Avoids embedding raw file bytes.
 
-    Time:  O(k) over extracted metadata keys (bounded)
-    Space: O(k)
     """
 
     md = dict(getattr(runtime_object, "metadata", {}) or {})
@@ -178,7 +168,11 @@ def _build_file_summary(
     pdf_meta = md.get("pdf")
     if isinstance(pdf_meta, Mapping):
         xmp = pdf_meta.get("xmp") if isinstance(pdf_meta.get("xmp"), Mapping) else {}
-        info_resolved = pdf_meta.get("info_resolved") if isinstance(pdf_meta.get("info_resolved"), Mapping) else {}
+        info_resolved = (
+            pdf_meta.get("info_resolved")
+            if isinstance(pdf_meta.get("info_resolved"), Mapping)
+            else {}
+        )
         info_ref = pdf_meta.get("info_ref") if isinstance(pdf_meta.get("info_ref"), Mapping) else {}
         fields = xmp.get("fields") if isinstance(xmp.get("fields"), Mapping) else {}
         inspector_signals["pdf"] = {
@@ -210,7 +204,9 @@ def _build_file_summary(
 
     missing_caps = []
     try:
-        missing_caps = list((export_res.decision.metadata or {}).get("missing_capabilities", []) or [])
+        missing_caps = list(
+            (export_res.decision.metadata or {}).get("missing_capabilities", []) or []
+        )
     except Exception:
         missing_caps = []
 
@@ -286,8 +282,6 @@ def build_forensic_bundle(
     - Normalized output is filtered by export policy.
     - Paths written inside the bundle are relative and sanitized.
 
-    Time:  O(n + e + o) where n is input file size if include_original/hash, e events, o objects
-    Space: O(1) extra besides JSON serialization buffers
     """
 
     in_path = Path(os.path.abspath(input_path))
@@ -301,11 +295,7 @@ def build_forensic_bundle(
     artifacts: List[BundleArtifact] = []
 
     def add_artifact(*, name: str, relpath: str, content_type: str, in_merkle: bool = True) -> None:
-        """Hash and register an artifact.
-
-        Time:  O(n) where n is artifact size (hashing)
-        Space: O(1)
-        """
+        """Hash and register an artifact."""
 
         p = out / relpath
         artifacts.append(
@@ -321,7 +311,9 @@ def build_forensic_bundle(
 
     def write_json(path: Path, data: Any) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(data, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(data, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+        )
 
     def write_jsonl(path: Path, rows: List[Mapping[str, Any]]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -459,9 +451,9 @@ def build_forensic_bundle(
         signature_info = sig_meta
 
         if embed_public_key:
-            sig_meta["public_key_pem"] = export_public_key_pem_from_private(signing_private_key_path).decode(
-                "utf-8", errors="replace"
-            )
+            sig_meta["public_key_pem"] = export_public_key_pem_from_private(
+                signing_private_key_path
+            ).decode("utf-8", errors="replace")
 
         sig_json_path = out / SIGNATURE_JSON
         sig_sig_path = out / SIGNATURE_SIG
@@ -469,18 +461,31 @@ def build_forensic_bundle(
         write_json(sig_json_path, sig_meta)
 
         # Signatures are not included in the Merkle root (otherwise circular).
-        add_artifact(name="signature_json", relpath=SIGNATURE_JSON, content_type="application/json", in_merkle=False)
-        add_artifact(name="signature_sig", relpath=SIGNATURE_SIG, content_type="text/plain", in_merkle=False)
+        add_artifact(
+            name="signature_json",
+            relpath=SIGNATURE_JSON,
+            content_type="application/json",
+            in_merkle=False,
+        )
+        add_artifact(
+            name="signature_sig", relpath=SIGNATURE_SIG, content_type="text/plain", in_merkle=False
+        )
 
         if embed_public_key:
             pub_path = out / PUBLIC_KEY_PEM
             pub_path.write_text(sig_meta.get("public_key_pem") + "\n", encoding="utf-8")
-            add_artifact(name="public_key", relpath=PUBLIC_KEY_PEM, content_type="application/x-pem-file", in_merkle=False)
+            add_artifact(
+                name="public_key",
+                relpath=PUBLIC_KEY_PEM,
+                content_type="application/x-pem-file",
+                in_merkle=False,
+            )
 
     # Write hashes.txt for humans.
     hashes_lines = [
         # Hash list is for humans. This includes signature files too.
-        f"{a.sha256}  {a.relpath}" for a in sorted(artifacts, key=lambda x: x.relpath)
+        f"{a.sha256}  {a.relpath}"
+        for a in sorted(artifacts, key=lambda x: x.relpath)
     ] + [
         f"MERKLE_ROOT  {merkle_root}",
         f"EVENT_CHAIN_OK  {event_chain_ok}",
@@ -526,7 +531,9 @@ def build_forensic_bundle(
             "signed": bool(signature_info is not None),
             "signature_json": SIGNATURE_JSON if signature_info is not None else None,
             "signature_sig": SIGNATURE_SIG if signature_info is not None else None,
-            "public_key": PUBLIC_KEY_PEM if (signature_info is not None and embed_public_key) else None,
+            "public_key": PUBLIC_KEY_PEM
+            if (signature_info is not None and embed_public_key)
+            else None,
             "signer_id": (signature_info or {}).get("signer_id") if signature_info else None,
         },
         "environment": {
@@ -573,8 +580,6 @@ def verify_forensic_bundle(bundle_dir: str) -> bool:
     - This verifies integrity, not authenticity.
     - For authenticity, add signing in a later milestone.
 
-    Time:  O(total_bytes)
-    Space: O(1)
     """
 
     details = verify_forensic_bundle_details(bundle_dir)
@@ -595,8 +600,6 @@ def verify_forensic_bundle_details(
     - Integrity verification is local-only; does not contact any network.
     - Authenticity verification requires a trusted public key.
 
-    Time:  O(total_bytes)
-    Space: O(1)
     """
 
     root = Path(bundle_dir)
@@ -661,7 +664,9 @@ def verify_forensic_bundle_details(
                 if isinstance(embedded, str) and embedded.strip():
                     try:
                         from cryptography.hazmat.primitives import serialization
-                        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+                        from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+                            Ed25519PublicKey,
+                        )
 
                         key = serialization.load_pem_public_key(embedded.encode("utf-8"))
                         if isinstance(key, Ed25519PublicKey):
@@ -692,7 +697,11 @@ def verify_forensic_bundle_details(
         receiver_public_key_path=receiver_public_key_path,
     )
 
-    ok = integrity_ok and (signature_ok in (None, True)) and bool(custody_details.get("custody_ok", True))
+    ok = (
+        integrity_ok
+        and (signature_ok in (None, True))
+        and bool(custody_details.get("custody_ok", True))
+    )
     out = {
         "ok": bool(ok),
         "integrity_ok": bool(integrity_ok),

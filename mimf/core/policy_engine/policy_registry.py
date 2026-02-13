@@ -1,4 +1,5 @@
 from typing import List
+
 from mimf.core.policy_engine.policy_exceptions import PolicyConfigurationError
 
 
@@ -14,9 +15,7 @@ class PolicyRegistry:
 
     def register(self, rule) -> None:
         if not hasattr(rule, "evaluate"):
-            raise PolicyConfigurationError(
-                "Policy rule must implement evaluate(context)"
-            )
+            raise PolicyConfigurationError("Policy rule must implement evaluate(context)")
         self._rules.append(rule)
 
     def get_rules(self) -> List:

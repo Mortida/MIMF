@@ -8,11 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 
 def _parse_dt(s: str) -> Optional[datetime]:
-    """Parse ISO8601-ish datetimes produced by MIMF.
-
-    Time:  O(len(s))
-    Space: O(1)
-    """
+    """Parse ISO8601-ish datetimes produced by MIMF."""
 
     if not isinstance(s, str) or not s.strip():
         return None
@@ -34,11 +30,7 @@ class TimelineItem:
 
 
 def _read_jsonl(path: Path, *, limit: int) -> Iterable[Dict[str, Any]]:
-    """Read up to `limit` JSONL objects.
-
-    Time:  O(k)
-    Space: O(1)
-    """
+    """Read up to `limit` JSONL objects."""
 
     if not path.exists():
         return []
@@ -73,8 +65,6 @@ def load_bundle_timeline(
     - Treat all JSON inputs as untrusted. We parse with best-effort.
     - Timeline is a viewer; it does not modify bundle files.
 
-    Time:  O(E + C) where E=events read, C=custody artifacts read
-    Space: O(E + C)
     """
 
     root = Path(bundle_dir)
@@ -160,7 +150,9 @@ def load_bundle_timeline(
                         "note": transfer.get("note"),
                         "sender_signer_id": sender.get("signer_id"),
                         "receiver_present": receiver not in (None, {}, ""),
-                        "receiver_signer_id": (receiver.get("signer_id") if isinstance(receiver, dict) else None),
+                        "receiver_signer_id": (
+                            receiver.get("signer_id") if isinstance(receiver, dict) else None
+                        ),
                     },
                 )
             )
@@ -175,11 +167,7 @@ def load_bundle_timeline(
 
 
 def render_timeline_text(items: List[TimelineItem], *, limit: int = 0) -> str:
-    """Render timeline into a human-friendly text report.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Render timeline into a human-friendly text report."""
 
     lines: List[str] = []
     for i, it in enumerate(items):

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, UTC
-from threading import Lock
-from typing import Dict, List, Mapping, Optional, Tuple
-from types import MappingProxyType
 from copy import deepcopy
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from threading import Lock
+from types import MappingProxyType
+from typing import Dict, List, Mapping, Optional, Tuple
 
-from .object import RuntimeObject
 from .events import RuntimeEvent
 from .hashing import stable_event_hash
+from .object import RuntimeObject
 
 
 @dataclass
@@ -30,12 +30,6 @@ class RuntimeContext:
     - Thread-safe mutation using a lock
     - Immutable external snapshots (callers cannot mutate internal state)
 
-    Complexity
-    - add_object: average O(1) time, O(1) extra space
-    - emit_event: O(s) time, O(s) space where s is size of event payload when serialized
-    - get_objects: O(n) time, O(n) space due to deepcopy
-    - get_events: O(m) time, O(m) space to create tuple view
-    - verify_integrity: O(m * s) time, O(1) extra space aside from hashing payloads
     """
 
     context_id: str
@@ -48,7 +42,6 @@ class RuntimeContext:
     _events: List[RuntimeEvent] = field(default_factory=list, init=False, repr=False)
     _lock: Lock = field(default_factory=Lock, init=False, repr=False)
 
-
     def upsert_object(self, obj) -> None:
         """
         Insert or replace an object by object_id.
@@ -57,8 +50,6 @@ class RuntimeContext:
         - Safe for in-place operations where object_id identity is stable.
         - Prior state should still be preserved via events/audit logs elsewhere.
 
-        Time:  O(1)
-        Space: O(1)
         """
         if not isinstance(obj, RuntimeObject):
             raise TypeError("Only RuntimeObject instances may be upserted")
@@ -199,8 +190,6 @@ class RuntimeContext:
         Replace an existing object with the same object_id.
 
         Security: preserves object identity; history should be captured via events.
-        Time: O(1)
-        Space: O(1)
         """
         if not isinstance(obj, RuntimeObject):
             raise TypeError("Only RuntimeObject instances may be updated")

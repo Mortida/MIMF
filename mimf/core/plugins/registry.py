@@ -14,55 +14,33 @@ class PluginRegistry:
     - Plugins are code execution. Only load trusted plugins.
     - Prefer an allowlist + signed plugins for real deployments.
 
-    Time:
     - register: O(1) average
     - get: O(1) average
     - list_plugins: O(n)
-    Space:
     - O(n) for n registered plugins
     """
 
     _plugins: Dict[str, PluginInterface] = field(default_factory=dict, init=False, repr=False)
 
     def register(self, plugin: PluginInterface) -> None:
-        """Register a plugin by plugin_id.
-
-        Time:  O(1) average
-        Space: O(1)
-        """
+        """Register a plugin by plugin_id."""
         pid = plugin.metadata.plugin_id
         if pid in self._plugins:
             raise RuntimeError(f"Duplicate plugin_id: {pid}")
         self._plugins[pid] = plugin
 
     def get(self, plugin_id: str) -> PluginInterface:
-        """Retrieve a plugin by id.
-
-        Time:  O(1) average
-        Space: O(1)
-        """
+        """Retrieve a plugin by id."""
         return self._plugins[plugin_id]
 
     def try_get(self, plugin_id: str) -> Optional[PluginInterface]:
-        """Retrieve a plugin or None.
-
-        Time:  O(1) average
-        Space: O(1)
-        """
+        """Retrieve a plugin or None."""
         return self._plugins.get(plugin_id)
 
     def list_plugins(self) -> List[PluginInterface]:
-        """List plugins in insertion order.
-
-        Time:  O(n)
-        Space: O(n)
-        """
+        """List plugins in insertion order."""
         return list(self._plugins.values())
 
     def iter_plugins(self) -> Iterable[PluginInterface]:
-        """Iterate plugins.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Iterate plugins."""
         return self._plugins.values()

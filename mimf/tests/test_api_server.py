@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import os
 
 from fastapi.testclient import TestClient
 
@@ -12,8 +11,6 @@ def test_api_inspect_normalize_export_verify_roundtrip(monkeypatch, tmp_path):
     Security notes:
     - Uses an in-memory JSON file (no sensitive data).
 
-    Time:  O(n) dominated by hashing/writing a small bundle
-    Space: O(n) dominated by zip bytes held by TestClient
     """
 
     # Configure one API key.
@@ -101,8 +98,6 @@ def test_api_rate_limit_and_upload_cap(monkeypatch, tmp_path):
     - Rate limiting is best-effort (memory-only), but should fail closed with 429.
     - Upload cap should reject oversize inputs with 413.
 
-    Time:  O(n) for small payloads
-    Space: O(n)
     """
 
     monkeypatch.setenv(
@@ -118,7 +113,7 @@ def test_api_rate_limit_and_upload_cap(monkeypatch, tmp_path):
     app = create_app(db_path=str(tmp_path / "mimf_runtime.db"))
     client = TestClient(app)
 
-    small = b"{\"a\":1}\n"
+    small = b'{"a":1}\n'
     r1 = client.post(
         "/inspect",
         headers={"X-MIMF-API-Key": "k"},

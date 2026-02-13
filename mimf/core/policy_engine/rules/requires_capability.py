@@ -1,6 +1,5 @@
-from mimf.core.policy_engine.policy_models import PolicyDecision
-from mimf.core.policy_engine.policy_models import PolicyRule
 from mimf.core.policy_engine.policy_context import PolicyContext
+from mimf.core.policy_engine.policy_models import PolicyDecision, PolicyRule
 from mimf.core.security.capabilities import Capability
 
 

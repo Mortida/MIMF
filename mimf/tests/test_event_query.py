@@ -1,9 +1,10 @@
-from datetime import datetime, UTC, timedelta
+from datetime import UTC, datetime, timedelta
+
 import pytest
 
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.event_query import EventQuery
-from mimf.core.runtime.events import RuntimeEvent, InspectionEvent
+from mimf.core.runtime.events import InspectionEvent, RuntimeEvent
 
 
 def test_event_query_by_type_filters_correctly():

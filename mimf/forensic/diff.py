@@ -3,15 +3,12 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping
 
 
+# if type(x) != type(y):
 def _sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
-    """Stream SHA-256 of a file.
-
-    Time:  O(n)
-    Space: O(1)
-    """
+    """Stream SHA-256 of a file."""
 
     import hashlib
 
@@ -26,11 +23,7 @@ def _sha256_file(path: Path, *, chunk_size: int = 1024 * 1024) -> str:
 
 
 def _read_json(path: Path) -> Dict[str, Any]:
-    """Read JSON if it exists.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Read JSON if it exists."""
 
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -44,8 +37,6 @@ def _deep_diff(a: Any, b: Any, *, prefix: str = "", limit: int = 200) -> List[Di
 
     Output entries: {"path": str, "a": Any, "b": Any}
 
-    Time:  O(n) over visited nodes (bounded by limit)
-    Space: O(limit)
     """
 
     out: List[Dict[str, Any]] = []
@@ -53,18 +44,22 @@ def _deep_diff(a: Any, b: Any, *, prefix: str = "", limit: int = 200) -> List[Di
     def rec(x: Any, y: Any, p: str) -> None:
         if len(out) >= limit:
             return
-        if type(x) != type(y):
+
+        if not isinstance(x, type(y)) or not isinstance(y, type(x)):
             out.append({"path": p or "$", "a": x, "b": y})
             return
+
         if isinstance(x, dict):
             keys = set(x.keys()) | set(y.keys())
             for k in sorted(keys):
                 if len(out) >= limit:
                     return
+
                 nx = x.get(k)
                 ny = y.get(k)
                 rec(nx, ny, f"{p}.{k}" if p else str(k))
             return
+
         if isinstance(x, list):
             if len(x) != len(y):
                 out.append({"path": p or "$", "a": f"len={len(x)}", "b": f"len={len(y)}"})
@@ -74,6 +69,7 @@ def _deep_diff(a: Any, b: Any, *, prefix: str = "", limit: int = 200) -> List[Di
                     return
                 rec(x[i], y[i], f"{p}[{i}]")
             return
+
         if x != y:
             out.append({"path": p or "$", "a": x, "b": y})
 
@@ -92,8 +88,6 @@ def diff_bundles(
     Security notes:
     - This is a local comparison tool; it never reads original file bytes.
 
-    Time:  O(size(manifests)+size(normalized))
-    Space: O(limit)
     """
 
     a = Path(os.path.abspath(bundle_a))
@@ -115,7 +109,7 @@ def diff_bundles(
     # Artifact sets from manifest, but we compare *actual* file bytes.
     def artifact_paths(man: Mapping[str, Any]) -> List[str]:
         out: List[str] = []
-        for it in (man.get("artifacts") or []):
+        for it in man.get("artifacts") or []:
             if isinstance(it, dict) and it.get("relpath"):
                 out.append(str(it["relpath"]))
         return out
@@ -139,16 +133,24 @@ def diff_bundles(
     changed = sorted([k for k in keys if k in art_a and k in art_b and art_a[k] != art_b[k]])
 
     # Compare normalized document payload (policy-controlled) and signals
-    doc_a = ((norm_a.get("normalized") or {}).get("document") if isinstance(norm_a, dict) else {}) or {}
-    doc_b = ((norm_b.get("normalized") or {}).get("document") if isinstance(norm_b, dict) else {}) or {}
+    doc_a = (
+        (norm_a.get("normalized") or {}).get("document") if isinstance(norm_a, dict) else {}
+    ) or {}
+    doc_b = (
+        (norm_b.get("normalized") or {}).get("document") if isinstance(norm_b, dict) else {}
+    ) or {}
     diffs_doc = _deep_diff(doc_a, doc_b, prefix="document", limit=limit)
 
-    sig_a = ((norm_a.get("normalized") or {}).get("signals") if isinstance(norm_a, dict) else {}) or {}
-    sig_b = ((norm_b.get("normalized") or {}).get("signals") if isinstance(norm_b, dict) else {}) or {}
+    sig_a = (
+        (norm_a.get("normalized") or {}).get("signals") if isinstance(norm_a, dict) else {}
+    ) or {}
+    sig_b = (
+        (norm_b.get("normalized") or {}).get("signals") if isinstance(norm_b, dict) else {}
+    ) or {}
     diffs_signals = _deep_diff(sig_a, sig_b, prefix="signals", limit=max(0, limit - len(diffs_doc)))
 
-    sha_a = ((sum_a.get("input") or {}).get("sha256") if isinstance(sum_a, dict) else None)
-    sha_b = ((sum_b.get("input") or {}).get("sha256") if isinstance(sum_b, dict) else None)
+    sha_a = (sum_a.get("input") or {}).get("sha256") if isinstance(sum_a, dict) else None
+    sha_b = (sum_b.get("input") or {}).get("sha256") if isinstance(sum_b, dict) else None
 
     return {
         "bundle_a": str(a),

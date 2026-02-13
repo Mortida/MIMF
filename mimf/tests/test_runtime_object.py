@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from mimf.core.runtime.object import RuntimeObject
 

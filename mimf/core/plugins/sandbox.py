@@ -18,8 +18,6 @@ class SandboxResult:
     Security notes:
     - stderr may contain sensitive paths; do not expose it by default.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     ok: bool
@@ -57,7 +55,6 @@ def inspect_file_sandboxed(
       but it does not provide full OS-level sandboxing.
     - For stronger isolation, run MIMF inside a container or dedicated user.
 
-    Complexity
     - Dominated by inspector cost (typically O(n) hashing)
     - Parent overhead: O(1)
     """
@@ -130,7 +127,9 @@ def inspect_file_sandboxed(
         )
 
     if not isinstance(payload, dict):
-        return SandboxResult(ok=False, plugin_id=plugin_id, runtime_object=None, error="sandbox_bad_payload")
+        return SandboxResult(
+            ok=False, plugin_id=plugin_id, runtime_object=None, error="sandbox_bad_payload"
+        )
 
     if not payload.get("ok"):
         return SandboxResult(
@@ -143,11 +142,23 @@ def inspect_file_sandboxed(
 
     snap = payload.get("runtime_object")
     if not isinstance(snap, dict):
-        return SandboxResult(ok=False, plugin_id=plugin_id, runtime_object=None, error="sandbox_missing_runtime_object")
+        return SandboxResult(
+            ok=False,
+            plugin_id=plugin_id,
+            runtime_object=None,
+            error="sandbox_missing_runtime_object",
+        )
 
     try:
         obj = RuntimeObject.from_snapshot(snap)
     except Exception as e:
-        return SandboxResult(ok=False, plugin_id=plugin_id, runtime_object=None, error=f"sandbox_unmarshal_failed: {e}")
+        return SandboxResult(
+            ok=False,
+            plugin_id=plugin_id,
+            runtime_object=None,
+            error=f"sandbox_unmarshal_failed: {e}",
+        )
 
-    return SandboxResult(ok=True, plugin_id=str(payload.get("plugin_id") or plugin_id), runtime_object=obj)
+    return SandboxResult(
+        ok=True, plugin_id=str(payload.get("plugin_id") or plugin_id), runtime_object=obj
+    )

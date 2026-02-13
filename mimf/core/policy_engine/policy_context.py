@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Mapping, Optional, Dict
+from typing import Any, Dict, Mapping, Optional
 
 
 def _freeze_mapping(value: Optional[Mapping[str, Any]]) -> MappingProxyType:
@@ -40,7 +40,9 @@ class PolicyContext:
         object.__setattr__(self, "metadata", _freeze_mapping(self.metadata))
 
     @classmethod
-    def from_runtime(cls, *, plan: Any, target: Any, metadata: Optional[Mapping[str, Any]] = None) -> "PolicyContext":
+    def from_runtime(
+        cls, *, plan: Any, target: Any, metadata: Optional[Mapping[str, Any]] = None
+    ) -> "PolicyContext":
         base: Dict[str, Any] = {
             "plan_id": getattr(plan, "plan_id", ""),
             "mutation_type": getattr(plan, "mutation_type", type(plan).__name__),

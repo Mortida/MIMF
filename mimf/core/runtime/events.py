@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
@@ -13,8 +13,6 @@ def _json_safe(value: Any) -> Any:
     - Do not attempt to serialize arbitrary objects (could leak secrets via repr).
     - Only handle a small whitelist of safe types.
 
-    Time:  O(n) for nested containers
-    Space: O(n)
     """
 
     if isinstance(value, datetime):
@@ -44,9 +42,6 @@ class RuntimeEvent:
     - Does not self-seal hashes
     - Deterministic JSON-safe payload export
 
-    Complexity
-    - to_payload: O(f) time and O(f) space where f is number of fields, plus
-      O(n) conversion cost for nested values.
     """
 
     event_id: UUID = field(default_factory=uuid4, init=False)

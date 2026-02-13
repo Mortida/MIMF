@@ -1,31 +1,28 @@
 from __future__ import annotations
 
+import hashlib
+import zipfile
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
-import hashlib
-import zipfile
 
 from defusedxml import ElementTree as DefusedET
 
-from mimf.core.plugins.contracts import PluginMetadata
-from mimf.core.plugins.file_inspector import FileInspectorPlugin
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
+from mimf.core.plugins.contracts import PluginMetadata
 from mimf.core.plugins.file_info import FileInfo
+from mimf.core.plugins.file_inspector import FileInspectorPlugin
 from mimf.core.runtime.object import RuntimeObject
-
 
 # Zip safety limits (defense-in-depth against zip bombs)
 _MAX_ZIP_ENTRIES = 5000
 _MAX_TOTAL_UNCOMPRESSED_BYTES = 50 * 1024 * 1024  # 50MB
-_MAX_SINGLE_FILE_BYTES = 10 * 1024 * 1024         # 10MB
+_MAX_SINGLE_FILE_BYTES = 10 * 1024 * 1024  # 10MB
 
 
 def _sha256_file(path: str, *, chunk_size: int = 1024 * 1024) -> str:
     """
-    Time:  O(N) where N=file size in bytes (streamed)
-    Space: O(1) extra
     Security: streaming hash (no full-file load).
     """
     h = hashlib.sha256()
@@ -66,6 +63,7 @@ class DocxInspectionResult:
     - Uses defusedxml to avoid entity expansion attacks.
     - Reads only docProps/core.xml and docProps/app.xml.
     """
+
     file_type: str
     properties: Dict[str, Any]
 
@@ -74,11 +72,9 @@ class DocxFileInspector(FileInspectorPlugin):
     """
     Built-in DOCX file inspector.
 
-    Time:  O(E + U + N) where:
       - E = zip entries scanned (bounded),
       - U = uncompressed bytes read (bounded),
       - N = file size for hashing (streamed).
-    Space: O(1) extra besides bounded metadata dicts.
 
     Security considerations:
     - Zip bomb limits: entry count, per-entry size, total uncompressed size

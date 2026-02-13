@@ -4,7 +4,7 @@ from pathlib import Path
 from mimf.core.plugins import PluginRegistry, load_builtin_plugins, select_file_inspector
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.inspection import Inspector
-from mimf.forensic import build_forensic_bundle, append_custody_event
+from mimf.forensic import append_custody_event, build_forensic_bundle
 from mimf.forensic.custody import create_transfer_receipt
 from mimf.forensic.signing import generate_ed25519_keypair
 from mimf.forensic.timeline import load_bundle_timeline

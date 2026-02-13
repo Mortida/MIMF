@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from mimf.core.policy_engine.policy_context import PolicyContext
 from mimf.core.policy_engine.policy_models import DecisionStatus
@@ -44,14 +44,18 @@ def test_deny_all_rule_denies():
 
 
 def test_label_allow_rule_allows_when_label_matches():
-    ctx = PolicyContext.from_runtime(plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"})))
+    ctx = PolicyContext.from_runtime(
+        plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"}))
+    )
     d = LabelAllowRule(allowed_label="safe").evaluate(ctx)
     assert d is not None
     assert d.status == DecisionStatus.ALLOW
 
 
 def test_label_allow_rule_denies_when_label_differs():
-    ctx = PolicyContext.from_runtime(plan=_make_plan(), target=_make_obj(labels=frozenset({"danger"})))
+    ctx = PolicyContext.from_runtime(
+        plan=_make_plan(), target=_make_obj(labels=frozenset({"danger"}))
+    )
     d = LabelAllowRule(allowed_label="safe").evaluate(ctx)
     assert d is not None
     assert d.status == DecisionStatus.DENY

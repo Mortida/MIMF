@@ -3,13 +3,12 @@ from __future__ import annotations
 import base64
 import json
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
-
 
 # Filenames used inside bundles.
 SIGNATURE_JSON = "signature.json"
@@ -31,11 +30,11 @@ def _canonical_json_bytes(obj: Mapping[str, Any]) -> bytes:
     Security notes:
     - Uses stable key ordering and separators to avoid signature ambiguity.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
 
 
 def generate_ed25519_keypair(out_dir: str, *, prefix: str = "mimf_ed25519") -> KeyPairPaths:
@@ -45,8 +44,6 @@ def generate_ed25519_keypair(out_dir: str, *, prefix: str = "mimf_ed25519") -> K
     - Private key is written unencrypted for simplicity; protect it with file permissions.
     - Consider encrypting at rest / using an HSM for production deployments.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     out = Path(out_dir)
@@ -75,11 +72,7 @@ def generate_ed25519_keypair(out_dir: str, *, prefix: str = "mimf_ed25519") -> K
 
 
 def load_private_key_pem(path: str) -> Ed25519PrivateKey:
-    """Load an Ed25519 private key from PEM.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Load an Ed25519 private key from PEM."""
 
     data = Path(path).read_bytes()
     key = serialization.load_pem_private_key(data, password=None)
@@ -89,11 +82,7 @@ def load_private_key_pem(path: str) -> Ed25519PrivateKey:
 
 
 def load_public_key_pem(path: str) -> Ed25519PublicKey:
-    """Load an Ed25519 public key from PEM.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Load an Ed25519 public key from PEM."""
 
     data = Path(path).read_bytes()
     key = serialization.load_pem_public_key(data)
@@ -103,11 +92,7 @@ def load_public_key_pem(path: str) -> Ed25519PublicKey:
 
 
 def maybe_load_public_key_pem(path: Optional[str]) -> Optional[Ed25519PublicKey]:
-    """Load a public key if a path is provided.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Load a public key if a path is provided."""
 
     if not path:
         return None
@@ -115,11 +100,7 @@ def maybe_load_public_key_pem(path: Optional[str]) -> Optional[Ed25519PublicKey]
 
 
 def export_public_key_pem_from_private(private_key_path: str) -> bytes:
-    """Derive and export the public key PEM from a private key.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Derive and export the public key PEM from a private key."""
 
     priv = load_private_key_pem(private_key_path)
     pub = priv.public_key()
@@ -137,8 +118,6 @@ def sign_detached_ed25519(private_key_path: str, payload: Mapping[str, Any]) -> 
     Security notes:
     - Only the canonical payload is signed (NOT the surrounding metadata).
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     priv = load_private_key_pem(private_key_path)
@@ -147,12 +126,10 @@ def sign_detached_ed25519(private_key_path: str, payload: Mapping[str, Any]) -> 
     return base64.b64encode(sig).decode("ascii")
 
 
-def verify_detached_ed25519(public_key: Ed25519PublicKey, payload: Mapping[str, Any], signature_b64: str) -> bool:
-    """Verify a detached Ed25519 signature.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+def verify_detached_ed25519(
+    public_key: Ed25519PublicKey, payload: Mapping[str, Any], signature_b64: str
+) -> bool:
+    """Verify a detached Ed25519 signature."""
 
     try:
         sig = base64.b64decode(signature_b64.encode("ascii"), validate=True)
@@ -168,11 +145,7 @@ def verify_detached_ed25519(public_key: Ed25519PublicKey, payload: Mapping[str, 
 
 
 def signing_metadata(*, signer_id: Optional[str]) -> Mapping[str, Any]:
-    """Standard signing metadata.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Standard signing metadata."""
 
     return {
         "schema": {"name": "mimf.bundle_signature", "version": "1.0"},

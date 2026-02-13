@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.dry_run_executor import DryRunExecutor

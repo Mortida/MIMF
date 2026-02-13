@@ -1,4 +1,5 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
+
 import pytest
 
 from mimf.core.policy_engine.policy_context import PolicyContext
@@ -32,7 +33,9 @@ def _make_plan() -> MutationPlan:
 
 
 def test_rule_based_engine_returns_first_match():
-    ctx = PolicyContext.from_runtime(plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"})))
+    ctx = PolicyContext.from_runtime(
+        plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"}))
+    )
 
     engine = RuleBasedPolicyEngine(
         rules=[
@@ -58,7 +61,9 @@ def test_rule_based_engine_denies_if_no_rules():
 
 
 def test_rule_based_engine_allows_when_label_rule_matches():
-    ctx = PolicyContext.from_runtime(plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"})))
+    ctx = PolicyContext.from_runtime(
+        plan=_make_plan(), target=_make_obj(labels=frozenset({"safe"}))
+    )
 
     engine = RuleBasedPolicyEngine(
         rules=[LabelAllowRule(allowed_label="safe")],

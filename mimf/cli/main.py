@@ -1,60 +1,63 @@
 from __future__ import annotations
-from mimf.utils.json_safe import to_jsonable
 
 import argparse
 import json
 import os
 import shutil
-import sys
 import sqlite3
-
-from datetime import datetime, UTC
-from typing import List
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import List
 
-
-from mimf.core.plugins import PluginRegistry, load_builtin_plugins, select_file_inspector, inspect_file_sandboxed
-from mimf.core.policy_engine.policy_engine import PolicyEngine
-from mimf.core.policy_engine.policy_rules import AllowAllRule
-from mimf.core.policy_engine.policy_pack import load_policy_pack, resolve_policy_pack_path
+from mimf.cli.client_cmds import register_client_commands
 from mimf.core.normalization import (
+    apply_normalized_export_policy,
     build_normalization_plan,
     normalize_runtime_object,
-    apply_normalized_export_policy,
 )
-from mimf.core.security.boundaries import SecurityBoundary
+from mimf.core.plugins import (
+    PluginRegistry,
+    inspect_file_sandboxed,
+    load_builtin_plugins,
+    select_file_inspector,
+)
 from mimf.core.plugins.file_info import sniff_file_info
+from mimf.core.policy_engine.policy_engine import PolicyEngine
+from mimf.core.policy_engine.policy_pack import load_policy_pack, resolve_policy_pack_path
+from mimf.core.policy_engine.policy_rules import AllowAllRule
 from mimf.core.runtime.context import RuntimeContext
-from mimf.core.runtime.inspection import Inspector
-from mimf.core.runtime.mutation_pipeline import SafeMutationPipeline
 from mimf.core.runtime.default_executor import DefaultMutationExecutor
 from mimf.core.runtime.dry_run_executor import DryRunExecutor
+from mimf.core.runtime.inspection import Inspector
+from mimf.core.runtime.mutation_pipeline import SafeMutationPipeline
 from mimf.core.runtime.storage.sqlite_store import SQLiteRuntimeStore
-
-
+from mimf.core.security.boundaries import SecurityBoundary
 from mimf.forensic import (
-    build_forensic_bundle,
-    verify_forensic_bundle,
-    append_custody_event,
-    create_transfer_receipt,
     accept_transfer_receipt,
+    append_custody_event,
+    build_forensic_bundle,
+    create_transfer_receipt,
     diff_bundles,
     load_bundle_timeline,
     render_timeline_text,
 )
 from mimf.forensic.bundle import verify_forensic_bundle_details
 from mimf.forensic.signing import generate_ed25519_keypair
-from mimf.cli.client_cmds import register_client_commands
 from mimf.utils.json_safe import to_jsonable
 
-# print(json.dumps(details), indent=2, sort_keys=True)
+# cmd_append_custody
+
 
 def _json_default(o):
     # Lazy import keeps CLI startup light and avoids circular imports
     from mimf.utils.json_safe import to_jsonable
+
     return to_jsonable(o)
 
+
 # output
+
 
 def cmd_serve(args: argparse.Namespace) -> int:
     """Run the MIMF API server.
@@ -63,8 +66,6 @@ def cmd_serve(args: argparse.Namespace) -> int:
     - If MIMF_API_KEYS is set, requests must provide X-MIMF-API-Key.
     - Bind to 127.0.0.1 by default (safer than 0.0.0.0).
 
-    Time:  O(1) startup
-    Space: O(1)
     """
 
     try:
@@ -85,11 +86,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
 
 def _read_json(path: str) -> dict:
-    """Read a JSON file.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Read a JSON file."""
 
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -111,8 +108,6 @@ def _pretty_print_bundle_summary(
     - Never prints the original file bytes.
     - Respects whatever redaction/denial already exists in file_summary.json.
 
-    Time:  O(k + events)
-    Space: O(k)
     """
 
     manifest = _read_json(os.path.join(bundle_dir, "manifest.json"))
@@ -158,7 +153,7 @@ def _pretty_print_bundle_summary(
             print(f"Signature: {s} ({t})  signer_id={signer_id}")
 
         if custody_present:
-            c = 'OK' if custody_ok else 'FAIL'
+            c = "OK" if custody_ok else "FAIL"
             print(f"Custody: {c}  entries={custody_entries}")
             if custody_sig_present:
                 cs = "OK" if custody_sig_ok else ("UNKNOWN" if custody_sig_ok is None else "FAIL")
@@ -187,7 +182,9 @@ def _pretty_print_bundle_summary(
         print("\n--- PDF Signals ---")
         print(f"Version: {pdf.get('version')}  MagicOK: {pdf.get('magic_ok')}")
         print(f"Linearized: {pdf.get('is_linearized')}  EOF marker: {pdf.get('has_eof_marker')}")
-        print(f"Info ref present: {pdf.get('info_ref_present')}  Resolved keys: {pdf.get('info_resolved_keys')}")
+        print(
+            f"Info ref present: {pdf.get('info_ref_present')}  Resolved keys: {pdf.get('info_resolved_keys')}"
+        )
         print(f"XMP present: {pdf.get('xmp_present')}  XMP sha256: {pdf.get('xmp_sha256')}")
 
     print("\n--- Normalized (policy-controlled) ---")
@@ -205,7 +202,9 @@ def _pretty_print_bundle_summary(
         print(f"Redacted fields: {pol.get('redacted_fields')}")
     if pol.get("missing_capabilities"):
         print(f"Missing capabilities: {pol.get('missing_capabilities')}")
-        print("Hint: re-run export-bundle with --boundary-capability / --actor-capability to allow identifying/tooling export.")
+        print(
+            "Hint: re-run export-bundle with --boundary-capability / --actor-capability to allow identifying/tooling export."
+        )
 
     if events and events > 0:
         ev_path = os.path.join(bundle_dir, "events.jsonl")
@@ -220,16 +219,15 @@ def _pretty_print_bundle_summary(
                         if not line:
                             continue
                         obj = json.loads(line)
-                        print(f"{i+1}. {obj.get('event_type')}  at {obj.get('created_at')}  id={obj.get('event_id')}")
+                        print(
+                            f"{i + 1}. {obj.get('event_type')}  at {obj.get('created_at')}  id={obj.get('event_id')}"
+                        )
             except Exception:
                 print("(Could not read events.jsonl)")
 
-def cmd_list_plugins(_: argparse.Namespace) -> int:
-    """List loaded plugins.
 
-    Time:  O(n)
-    Space: O(1)
-    """
+def cmd_list_plugins(_: argparse.Namespace) -> int:
+    """List loaded plugins."""
     registry = PluginRegistry()
     load_builtin_plugins(registry)
 
@@ -246,8 +244,6 @@ def _inspect_file_maybe_sandbox(plugin, path: str, object_id: str | None, sandbo
     Security notes:
     - Sandbox is best-effort isolation to reduce crash/DoS risk from hostile files.
 
-    Time:  dominated by inspection (typically O(n))
-    Space: inspector-dependent
     """
 
     if not sandbox:
@@ -269,8 +265,6 @@ def cmd_inspect_file(args: argparse.Namespace) -> int:
     Security notes:
     - Treat file contents as untrusted; plugins must enforce safe parsing limits.
 
-    Time:  dominated by plugin.inspect_file (typically O(n))
-    Space: dominated by plugin implementation
     """
 
     path = os.path.abspath(args.path)
@@ -292,7 +286,9 @@ def cmd_inspect_file(args: argparse.Namespace) -> int:
         operation_name="CLI:inspect-file",
     )
 
-    runtime_object = _inspect_file_maybe_sandbox(plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False)))
+    runtime_object = _inspect_file_maybe_sandbox(
+        plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False))
+    )
     context.add_object(runtime_object)
 
     inspection_event = Inspector.inspect(runtime_object, context)
@@ -306,9 +302,11 @@ def cmd_inspect_file(args: argparse.Namespace) -> int:
     }
 
     from mimf.utils.json_safe import to_jsonable
+
     print(json.dumps(to_jsonable(to_jsonable(output)), indent=2, sort_keys=True))
 
     return 0
+
 
 def cmd_normalize_file(args: argparse.Namespace) -> int:
     """Inspect a file and attach normalized metadata via a mutation plan.
@@ -321,8 +319,6 @@ def cmd_normalize_file(args: argparse.Namespace) -> int:
     - Normalized output may include sensitive document fields (title/author).
     - Uses an allow-all policy for CLI convenience; production should use real rules.
 
-    Time:  dominated by inspection (O(n) hashing) + mutation merge
-    Space: bounded by inspector implementation
     """
 
     path = os.path.abspath(args.path)
@@ -400,8 +396,6 @@ def cmd_show_normalized(args: argparse.Namespace) -> int:
     - Normalized output may include sensitive fields (e.g., PDF title/author).
     - Treat output as untrusted if you plan to ingest it elsewhere.
 
-    Time:  dominated by inspection (typically O(n) hashing)
-    Space: bounded by inspector implementation
     """
 
     path = os.path.abspath(args.path)
@@ -418,7 +412,9 @@ def cmd_show_normalized(args: argparse.Namespace) -> int:
     load_builtin_plugins(registry)
     plugin = select_file_inspector(registry, path)
 
-    runtime_object = _inspect_file_maybe_sandbox(plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False)))
+    runtime_object = _inspect_file_maybe_sandbox(
+        plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False))
+    )
     dispatch, normalized, sources = normalize_runtime_object(runtime_object, info)
 
     # POLICY_PACK_OVERRIDES
@@ -436,7 +432,7 @@ def cmd_show_normalized(args: argparse.Namespace) -> int:
         pack = load_policy_pack(resolved)
         boundary_caps = list(pack.allow_capabilities)
         actor_caps = list(pack.allow_capabilities)
-        strict_export = (pack.export_mode == "deny")
+        strict_export = pack.export_mode == "deny"
     boundary = SecurityBoundary.from_names(
         boundary_id=args.boundary_id,
         capability_names=list(boundary_caps),
@@ -488,8 +484,6 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
     - Normalized output is controlled by export policy and redacted/denied accordingly.
     - Bundle contents are integrity-protected (hashes + Merkle root), but not signed.
 
-    Time:  O(n + e + o) dominated by file hashing and JSON writing
-    Space: O(1) extra besides serialization buffers
     """
 
     path = os.path.abspath(args.path)
@@ -510,7 +504,9 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
         operation_name="CLI:export-bundle",
     )
 
-    runtime_object = _inspect_file_maybe_sandbox(plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False)))
+    runtime_object = _inspect_file_maybe_sandbox(
+        plugin, path, object_id=args.object_id, sandbox=bool(getattr(args, "sandbox", False))
+    )
     context.add_object(runtime_object)
     Inspector.inspect(runtime_object, context)
 
@@ -531,7 +527,6 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
     if not out_dir:
         out_dir = os.path.join(os.getcwd(), f"mimf_bundle_{int(datetime.now(UTC).timestamp())}")
 
-
     # POLICY_PACK_OVERRIDES_EXPORT
     policy_pack = getattr(args, "policy_pack", None)
     boundary_caps = list(args.boundary_capability or [])
@@ -539,11 +534,13 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
     strict_export = bool(args.strict)
     if policy_pack:
         base_dir = str(Path(__file__).resolve().parents[2].parent / "policy_packs")
-        pack_path = resolve_policy_pack_path(policy_pack, base_dir=base_dir, allow_arbitrary_paths=False)
+        pack_path = resolve_policy_pack_path(
+            policy_pack, base_dir=base_dir, allow_arbitrary_paths=False
+        )
         pack = load_policy_pack(pack_path)
         boundary_caps = list(pack.allow_capabilities)
         actor_caps = list(pack.allow_capabilities)
-        strict_export = (pack.export_mode == "deny")
+        strict_export = pack.export_mode == "deny"
 
     boundary = SecurityBoundary.from_names(
         boundary_id=args.boundary_id,
@@ -572,8 +569,6 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
         base = result.out_dir.rstrip(os.sep)
         zip_path = shutil.make_archive(base, "zip", root_dir=result.out_dir)
 
-
-
     # Optional: persist the RuntimeContext for later retrieval/audit
     persisted = None
     if bool(getattr(args, "persist", False)):
@@ -585,7 +580,10 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
             store.save_context(context, overwrite=bool(getattr(args, "overwrite_context", False)))
             persisted = {"db": str(store.db_path), "context_id": context.context_id}
         except sqlite3.IntegrityError as e:
-            print(f"error: context already exists in DB (use --overwrite-context): {e}", file=sys.stderr)
+            print(
+                f"error: context already exists in DB (use --overwrite-context): {e}",
+                file=sys.stderr,
+            )
             return 3
     summary_path = os.path.join(result.out_dir, "file_summary.json")
     summary = _read_json(summary_path) if os.path.exists(summary_path) else {}
@@ -613,11 +611,7 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
 
 
 def cmd_show_bundle(args: argparse.Namespace) -> int:
-    """Show a human-friendly summary of a bundle.
-
-    Time:  O(k)
-    Space: O(k)
-    """
+    """Show a human-friendly summary of a bundle."""
 
     bundle_dir = os.path.abspath(args.bundle_dir)
     if not os.path.exists(bundle_dir):
@@ -649,11 +643,7 @@ def cmd_show_bundle(args: argparse.Namespace) -> int:
 
 
 def cmd_verify_bundle(args: argparse.Namespace) -> int:
-    """Verify a forensic bundle directory.
-
-    Time:  O(total_bytes)
-    Space: O(1)
-    """
+    """Verify a forensic bundle directory."""
 
     details = verify_forensic_bundle_details(
         args.bundle_dir,
@@ -672,8 +662,6 @@ def cmd_keygen(args: argparse.Namespace) -> int:
     Security notes:
     - Store the private key securely. Anyone with it can forge signatures.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     out_dir = os.path.abspath(args.out_dir)
@@ -698,8 +686,6 @@ def cmd_append_custody(args: argparse.Namespace) -> int:
     - This does NOT rewrite existing bundle artifacts.
     - If signing is enabled, sign the addendum with an Ed25519 private key.
 
-    Time:  O(total_custody_bytes)
-    Space: O(1)
     """
 
     bundle_dir = os.path.abspath(args.bundle_dir)
@@ -729,7 +715,7 @@ def cmd_append_custody(args: argparse.Namespace) -> int:
         "addendum_path": res.addendum_path,
         "signature_path": res.signature_path,
     }
-    print(json.dumps(to_jsonable(out, indent=2, sort_keys=True, default=str)))
+    print(json.dumps(to_jsonable(out), indent=2, sort_keys=True, default=str))
     return 0
 
 
@@ -740,8 +726,6 @@ def cmd_transfer_custody(args: argparse.Namespace) -> int:
     - Receipt is additive evidence; does not rewrite base artifacts.
     - The sender signature binds to bundle base identifiers.
 
-    Time:  O(k)
-    Space: O(1)
     """
 
     bundle_dir = os.path.abspath(args.bundle_dir)
@@ -784,11 +768,7 @@ def cmd_transfer_custody(args: argparse.Namespace) -> int:
 
 
 def cmd_accept_transfer(args: argparse.Namespace) -> int:
-    """Accept a transfer receipt by adding a receiver signature.
-
-    Time:  O(k)
-    Space: O(1)
-    """
+    """Accept a transfer receipt by adding a receiver signature."""
 
     bundle_dir = os.path.abspath(args.bundle_dir)
     if not os.path.isdir(bundle_dir):
@@ -834,8 +814,6 @@ def cmd_timeline(args: argparse.Namespace) -> int:
     Security notes:
     - Viewer only. No mutation.
 
-    Time:  O(E + C)
-    Space: O(E + C)
     """
 
     bundle_dir = os.path.abspath(args.bundle_dir)
@@ -874,11 +852,7 @@ def cmd_timeline(args: argparse.Namespace) -> int:
 
 
 def cmd_bundle_diff(args: argparse.Namespace) -> int:
-    """Diff two bundle directories.
-
-    Time:  O(size(manifest)+size(normalized))
-    Space: O(limit)
-    """
+    """Diff two bundle directories."""
 
     try:
         d = diff_bundles(args.bundle_a, args.bundle_b, limit=int(args.limit or 200))
@@ -902,7 +876,9 @@ def cmd_bundle_diff(args: argparse.Namespace) -> int:
 
     arts = d.get("artifacts") or {}
     print("\n--- Artifacts ---")
-    print(f"Added: {len(arts.get('added') or [])}  Removed: {len(arts.get('removed') or [])}  Changed: {len(arts.get('changed') or [])}")
+    print(
+        f"Added: {len(arts.get('added') or [])}  Removed: {len(arts.get('removed') or [])}  Changed: {len(arts.get('changed') or [])}"
+    )
 
     norm = d.get("normalized") or {}
     print("\n--- Normalized diffs ---")
@@ -914,13 +890,8 @@ def cmd_bundle_diff(args: argparse.Namespace) -> int:
     return 0
 
 
-
 def cmd_db_init(args: argparse.Namespace) -> int:
-    """Initialize a SQLite runtime store.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Initialize a SQLite runtime store."""
 
     store = SQLiteRuntimeStore(Path(args.db))
     store.init_schema()
@@ -929,11 +900,7 @@ def cmd_db_init(args: argparse.Namespace) -> int:
 
 
 def cmd_db_list_contexts(args: argparse.Namespace) -> int:
-    """List contexts stored in a SQLite runtime store.
-
-    Time:  O(limit)
-    Space: O(limit)
-    """
+    """List contexts stored in a SQLite runtime store."""
 
     store = SQLiteRuntimeStore(Path(args.db))
     rows = store.list_contexts(limit=int(args.limit or 50))
@@ -947,8 +914,6 @@ def cmd_db_show_context(args: argparse.Namespace) -> int:
     Security notes:
     - Stored metadata can be sensitive. This command prints raw snapshots.
 
-    Time:  O(o + e)
-    Space: O(o + e)
     """
 
     store = SQLiteRuntimeStore(Path(args.db))
@@ -972,7 +937,11 @@ def cmd_db_show_context(args: argparse.Namespace) -> int:
             "event_chain_tip": (events[-1].event_hash if events else None),
         },
         "objects": [o.snapshot() for o in objects],
-        "events": [e.to_payload() | {"previous_event_hash": e.previous_event_hash, "event_hash": e.event_hash} for e in events[:ev_n]],
+        "events": [
+            e.to_payload()
+            | {"previous_event_hash": e.previous_event_hash, "event_hash": e.event_hash}
+            for e in events[:ev_n]
+        ],
     }
 
     print(json.dumps(out, indent=2, sort_keys=True, default=str))
@@ -980,11 +949,7 @@ def cmd_db_show_context(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the CLI parser.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Build the CLI parser."""
     p = argparse.ArgumentParser(prog="mimf", description="MIMF CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -1009,12 +974,20 @@ def build_parser() -> argparse.ArgumentParser:
     np.add_argument("--sandbox", action="store_true", help="Run inspector in a subprocess sandbox")
     np.set_defaults(func=cmd_normalize_file)
 
-    sp = sub.add_parser("show-normalized", help="Inspect a file and print normalized output (no mutation)")
+    sp = sub.add_parser(
+        "show-normalized", help="Inspect a file and print normalized output (no mutation)"
+    )
     sp.add_argument("path", help="Path to file")
     sp.add_argument("--object-id", default=None, help="Override RuntimeObject.object_id")
     sp.add_argument("--sandbox", action="store_true", help="Run inspector in a subprocess sandbox")
-    sp.add_argument("--policy-pack", default=None, help="Policy pack name/path (overrides boundary/actor/strict)")
-    sp.add_argument("--boundary-id", default="export-bundle", help="Security boundary id for export")
+    sp.add_argument(
+        "--policy-pack",
+        default=None,
+        help="Policy pack name/path (overrides boundary/actor/strict)",
+    )
+    sp.add_argument(
+        "--boundary-id", default="export-bundle", help="Security boundary id for export"
+    )
     sp.add_argument(
         "--boundary-capability",
         action="append",
@@ -1041,12 +1014,22 @@ def build_parser() -> argparse.ArgumentParser:
     eb.add_argument("--context-id", default=None, help="Override RuntimeContext.context_id")
     eb.add_argument("--actor-id", default=None, help="Optional actor id")
     eb.add_argument("--plan-id", default=None, help="Override normalization MutationPlan.plan_id")
-    eb.add_argument("--policy-pack", default=None, help="Policy pack name/path (overrides boundary/actor/strict)")
+    eb.add_argument(
+        "--policy-pack",
+        default=None,
+        help="Policy pack name/path (overrides boundary/actor/strict)",
+    )
     eb.add_argument("--out", default=None, help="Output directory (created if missing)")
     eb.add_argument("--zip", action="store_true", help="Also create a .zip of the bundle directory")
-    eb.add_argument("--include-original", action="store_true", help="Copy the original file into the bundle")
-    eb.add_argument("--include-absolute-path", action="store_true", help="Record absolute path in manifest")
-    eb.add_argument("--apply", action="store_true", help="Apply normalization mutation (default is dry-run)")
+    eb.add_argument(
+        "--include-original", action="store_true", help="Copy the original file into the bundle"
+    )
+    eb.add_argument(
+        "--include-absolute-path", action="store_true", help="Record absolute path in manifest"
+    )
+    eb.add_argument(
+        "--apply", action="store_true", help="Apply normalization mutation (default is dry-run)"
+    )
     eb.add_argument(
         "--boundary-id",
         default="export-bundle",
@@ -1103,9 +1086,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Embed the derived public key inside the bundle (convenient but not trusted)",
     )
     # Persistence (optional)
-    eb.add_argument("--db", default=None, help="SQLite DB path to persist RuntimeContext (optional)")
-    eb.add_argument("--persist", action="store_true", help="Persist the RuntimeContext into --db after export")
-    eb.add_argument("--overwrite-context", action="store_true", help="Overwrite existing context row when persisting")
+    eb.add_argument(
+        "--db", default=None, help="SQLite DB path to persist RuntimeContext (optional)"
+    )
+    eb.add_argument(
+        "--persist", action="store_true", help="Persist the RuntimeContext into --db after export"
+    )
+    eb.add_argument(
+        "--overwrite-context",
+        action="store_true",
+        help="Overwrite existing context row when persisting",
+    )
 
     eb.set_defaults(func=cmd_export_bundle)
 
@@ -1174,13 +1165,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     kg.set_defaults(func=cmd_keygen)
 
-    ce = sub.add_parser("append-custody", help="Append a chain-of-custody event to an existing bundle")
+    ce = sub.add_parser(
+        "append-custody", help="Append a chain-of-custody event to an existing bundle"
+    )
     ce.add_argument("bundle_dir", help="Path to bundle directory")
     ce.add_argument("action", help="Custody action (e.g., CREATED, TRANSFERRED, ACCESSED)")
     ce.add_argument("--actor-id", default=None, help="Optional actor id")
     ce.add_argument("--note", default=None, help="Optional free-text note")
     ce.add_argument("--signer-id", default=None, help="Optional signer id")
-    ce.add_argument("--key", default=None, help="Path to Ed25519 PRIVATE key PEM (signs custody addendum)")
+    ce.add_argument(
+        "--key", default=None, help="Path to Ed25519 PRIVATE key PEM (signs custody addendum)"
+    )
     ce.add_argument(
         "--embed-pubkey",
         action="store_true",
@@ -1204,7 +1199,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     ac = sub.add_parser("accept-transfer", help="Accept a transfer receipt (receiver-signed)")
     ac.add_argument("bundle_dir", help="Path to bundle directory")
-    ac.add_argument("--receipt", default=None, help="Receipt relpath (default: latest pending receipt)")
+    ac.add_argument(
+        "--receipt", default=None, help="Receipt relpath (default: latest pending receipt)"
+    )
     ac.add_argument("--actor-id", default=None, help="Receiver actor id")
     ac.add_argument("--signer-id", default=None, help="Optional signer id")
     ac.add_argument("--key", default=None, help="Path to Ed25519 PRIVATE key PEM (receiver)")
@@ -1229,8 +1226,6 @@ def build_parser() -> argparse.ArgumentParser:
     bd.add_argument("--limit", type=int, default=200, help="Max diff entries")
     bd.add_argument("--json", action="store_true", help="Print JSON diff")
     bd.set_defaults(func=cmd_bundle_diff)
-
-
 
     # --- SQLite runtime store commands ---
     dbi = sub.add_parser("db-init", help="Initialize a SQLite runtime store")
@@ -1263,11 +1258,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: List[str] | None = None) -> int:
-    """CLI entry.
-
-    Time:  depends on subcommand
-    Space: depends on subcommand
-    """
+    """CLI entry."""
     parser = build_parser()
     args = parser.parse_args(argv)
     return int(args.func(args))

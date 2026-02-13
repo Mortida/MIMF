@@ -1,7 +1,8 @@
-import json
 import hashlib
+import json
 from datetime import datetime
 from typing import Any
+
 
 def _json_safe(value: Any) -> Any:
     """

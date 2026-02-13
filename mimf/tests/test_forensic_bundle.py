@@ -7,6 +7,7 @@ from mimf.core.runtime.inspection import Inspector
 from mimf.forensic import build_forensic_bundle, verify_forensic_bundle
 
 
+# bundle2
 def test_forensic_bundle_build_and_verify(tmp_path: Path) -> None:
     # Create a tiny JSON file so we exercise: plugin -> context -> bundle.
     p = tmp_path / "evidence.json"
@@ -29,6 +30,8 @@ def test_forensic_bundle_build_and_verify(tmp_path: Path) -> None:
         out_dir=str(out_dir),
         include_original=False,
     )
+
+    assert res.bundle_id
 
     assert Path(res.manifest_path).exists()
     assert (out_dir / "events.jsonl").exists()
@@ -56,7 +59,7 @@ def test_forensic_bundle_can_include_original_file(tmp_path: Path) -> None:
     Inspector.inspect(obj, ctx)
 
     out_dir = tmp_path / "bundle2"
-    res = build_forensic_bundle(
+    build_forensic_bundle(
         input_path=str(p),
         runtime_object=obj,
         context=ctx,

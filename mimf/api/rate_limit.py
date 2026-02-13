@@ -9,11 +9,7 @@ from typing import Dict, Optional, Tuple
 
 @dataclass(frozen=True, slots=True)
 class RateLimitDecision:
-    """Result of a rate limit check.
-
-    Time:  O(1)
-    Space: O(1)
-    """
+    """Result of a rate limit check."""
 
     allowed: bool
     retry_after_seconds: int = 0
@@ -31,8 +27,6 @@ class TokenBucketRateLimiter:
       use a shared store (Redis) or an API gateway.
     - We keep keys short to reduce memory abuse.
 
-    Time:  O(1) per check
-    Space: O(u) for u unique identities observed
     """
 
     def __init__(self, *, rpm: int = 60, burst: Optional[int] = None, max_key_len: int = 128):
@@ -52,8 +46,6 @@ class TokenBucketRateLimiter:
         - MIMF_RATE_LIMIT_RPM (default 120)
         - MIMF_RATE_LIMIT_BURST (default max(2, rpm))
 
-        Time:  O(1)
-        Space: O(1)
         """
 
         rpm_raw = os.environ.get("MIMF_RATE_LIMIT_RPM", "120").strip()
@@ -70,11 +62,7 @@ class TokenBucketRateLimiter:
         return TokenBucketRateLimiter(rpm=rpm, burst=burst)
 
     def check(self, identity: str) -> RateLimitDecision:
-        """Check and consume one token for an identity.
-
-        Time:  O(1)
-        Space: O(1)
-        """
+        """Check and consume one token for an identity."""
 
         if not identity:
             identity = "anonymous"

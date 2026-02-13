@@ -1,9 +1,9 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
 from mimf.core.runtime.context import RuntimeContext
-from mimf.core.runtime.events import RuntimeEvent, InspectionEvent
+from mimf.core.runtime.events import InspectionEvent, RuntimeEvent
 from mimf.core.runtime.object import RuntimeObject
 from mimf.core.runtime.replay import ReplayEngine
 

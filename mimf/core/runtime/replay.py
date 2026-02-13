@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import fields
-from typing import Iterable, Optional, Any, Dict
+from typing import Any, Dict, Iterable, Optional
 
 from .context import RuntimeContext
 from .events import RuntimeEvent

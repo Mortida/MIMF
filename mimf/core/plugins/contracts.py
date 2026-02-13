@@ -1,22 +1,26 @@
 from dataclasses import dataclass
-from typing import FrozenSet, Dict, Protocol
 from datetime import datetime
+from typing import FrozenSet, Protocol
+
 
 @dataclass(frozen=True)
 class PluginMetadata:
     """
     Immutable metadata describing a plugin.
     """
-    plugin_id: str                 # Unique identifier
-    name: str                      # Human-readable name
-    version: str                   # Plugin version
-    author: str                    # Author or organization
+
+    plugin_id: str  # Unique identifier
+    name: str  # Human-readable name
+    version: str  # Plugin version
+    author: str  # Author or organization
     allowed_actions: FrozenSet[str]  # Actions plugin can perform
     created_at: datetime
+
 
 # ------------------------------
 # Plugin Interface / Protocol
 # ------------------------------
+
 
 class PluginInterface(Protocol):
     """

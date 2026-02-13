@@ -4,9 +4,8 @@ from typing import Protocol, runtime_checkable
 
 from mimf.core.runtime.object import RuntimeObject
 
-from .contracts import PluginInterface
 from .capabilities import FileInspectorCapabilities
-from .file_info import FileInfo
+from .contracts import PluginInterface
 
 
 @runtime_checkable
@@ -18,7 +17,6 @@ class FileInspectorPlugin(PluginInterface, Protocol):
     - Enforce size limits before parsing.
     - Never execute embedded code (e.g., avoid eval).
 
-    Complexity
     - can_handle: implementation-specific, should be O(1) or O(len(path))
     - inspect_file: at least O(n) to read file for hashing/metadata where n=file size
 
@@ -35,13 +33,10 @@ class FileInspectorPlugin(PluginInterface, Protocol):
         Security notes:
         - This is a hint, not a guarantee.
 
-        Time:  O(1)
-        Space: O(1)
         """
         ...
 
-    def can_handle(self, path: str) -> bool:
-        ...
+    def can_handle(self, path: str) -> bool: ...
 
     # Optional enhanced APIs (selector uses them if present):
     # - can_handle_file(self, info: FileInfo) -> bool
@@ -56,10 +51,7 @@ class FileInspectorPlugin(PluginInterface, Protocol):
         - Must be cheap and side-effect free.
         - Must not read the file contents.
 
-        Complexity
-        - O(1) time, O(1) space (recommended)
         """
         ...
 
-    def inspect_file(self, path: str, *, object_id: str | None = None) -> RuntimeObject:
-        ...
+    def inspect_file(self, path: str, *, object_id: str | None = None) -> RuntimeObject: ...

@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
-from mimf.core.runtime.mutation_pipeline import SafeMutationPipeline
+from mimf.core.policy_engine.policy_models import DecisionStatus, PolicyDecision
 from mimf.core.runtime.context import RuntimeContext
+from mimf.core.runtime.mutation import MutationExecutor, MutationPlan
+from mimf.core.runtime.mutation_pipeline import SafeMutationPipeline
 from mimf.core.runtime.object import RuntimeObject
-from mimf.core.runtime.mutation import MutationPlan, MutationExecutor
 from mimf.core.security.boundaries import SecurityBoundary
 from mimf.core.security.capabilities import Capability
-
-from mimf.core.policy_engine.policy_models import DecisionStatus, PolicyDecision
 
 
 class _PolicyEngineSpy:

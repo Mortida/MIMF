@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set
+from typing import Any, List, Mapping, Optional, Set
 
 from mimf.core.security.boundaries import SecurityBoundary
 from mimf.core.security.capabilities import Capability
@@ -16,8 +16,6 @@ def _normalize_capabilities(raw: Any) -> List[Capability]:
 
     Accepts list[str] or list[Capability]. Invalid inputs return empty list.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     if not isinstance(raw, list):
@@ -63,8 +61,6 @@ class NormalizedExportRule(PolicyRule):
     Security notes:
     - Fail closed: on invalid metadata shapes, redact identifying/tooling fields.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     rule_id: str = "normalized-export-fields"
@@ -119,7 +115,9 @@ class NormalizedExportRule(PolicyRule):
             redact |= _TOOLING_FIELDS
 
         if strict and (missing or boundary is None):
-            why = "Missing export capabilities" if missing else "Missing or invalid security boundary"
+            why = (
+                "Missing export capabilities" if missing else "Missing or invalid security boundary"
+            )
             return PolicyDecision(
                 status=DecisionStatus.DENY,
                 policy_id=self.rule_id,

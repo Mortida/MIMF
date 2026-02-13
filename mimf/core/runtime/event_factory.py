@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from typing import Any, Dict, Type
 from uuid import UUID
 
 from .events import (
-    RuntimeEvent,
     InspectionEvent,
-    PolicyEvaluationEvent,
     MutationExecutionEvent,
+    PolicyEvaluationEvent,
+    RuntimeEvent,
 )
-
 
 _EVENT_TYPES: Dict[str, Type[RuntimeEvent]] = {
     "InspectionEvent": InspectionEvent,
@@ -25,8 +23,6 @@ def _parse_dt(value: str) -> datetime:
 
     Security: input is untrusted. Only accept ISO strings.
 
-    Time:  O(1)
-    Space: O(1)
     """
     return datetime.fromisoformat(value)
 
@@ -47,8 +43,6 @@ def event_from_record(record: Dict[str, Any]) -> RuntimeEvent:
     - Only allow known event types.
     - Only pass whitelisted constructor args.
 
-    Time:  O(p) where p is number of payload fields
-    Space: O(p)
     """
 
     et = record.get("event_type")
@@ -98,7 +92,10 @@ def event_from_record(record: Dict[str, Any]) -> RuntimeEvent:
             "applied": payload.get("applied"),
             "metadata": payload.get("metadata", {}),
         }
-        if not all(isinstance(kwargs[k], str) for k in ("plan_id", "target_object_id", "mutation_type", "executor")):
+        if not all(
+            isinstance(kwargs[k], str)
+            for k in ("plan_id", "target_object_id", "mutation_type", "executor")
+        ):
             raise ValueError("Invalid MutationExecutionEvent payload")
         if not isinstance(kwargs["applied"], bool):
             raise ValueError("Invalid MutationExecutionEvent applied")

@@ -9,7 +9,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-
 log = logging.getLogger("mimf.api")
 
 
@@ -23,8 +22,6 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
     - If a client supplies X-Request-ID, we accept it only if it is short.
       Otherwise we generate our own to reduce header abuse/log injection.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     def __init__(self, app, *, header_name: str = "X-Request-ID", max_len: int = 128):
@@ -49,8 +46,6 @@ class AccessLogMiddleware(BaseHTTPMiddleware):
     - Avoid logging full request bodies or file names.
     - Log request_id to correlate with server-side events.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     async def dispatch(self, request: Request, call_next: Callable):

@@ -1,10 +1,10 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 import pytest
 
 from mimf.core.runtime.context import RuntimeContext
-from mimf.core.runtime.object import RuntimeObject
 from mimf.core.runtime.events import RuntimeEvent
+from mimf.core.runtime.object import RuntimeObject
 
 
 def test_runtime_context_add_object_registers_and_prevents_duplicates():

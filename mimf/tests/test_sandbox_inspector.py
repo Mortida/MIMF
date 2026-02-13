@@ -10,7 +10,9 @@ def test_sandbox_json_inspector_roundtrip(tmp_path: Path) -> None:
     p = tmp_path / "sample.json"
     p.write_text(json.dumps({"hello": "world", "n": 1}), encoding="utf-8")
 
-    res = inspect_file_sandboxed(plugin_id="builtin.json_inspector", path=str(p), timeout_seconds=10, memory_limit_mb=256)
+    res = inspect_file_sandboxed(
+        plugin_id="builtin.json_inspector", path=str(p), timeout_seconds=10, memory_limit_mb=256
+    )
     assert res.ok, res.error
     assert res.runtime_object is not None
     obj = res.runtime_object

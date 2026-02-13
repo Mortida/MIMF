@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,8 +25,6 @@ class PolicyPack:
     - Treat policy pack files as trusted configuration.
     - In the API, do NOT allow arbitrary filesystem paths by default.
 
-    Complexity
-    - load: O(n) time, O(n) space for file size n.
     """
 
     pack_id: str
@@ -52,12 +50,11 @@ def _parse_minimal_yaml(text: str) -> Dict[str, Any]:
 
     This is not a general YAML parser.
 
-    Time:  O(n)
-    Space: O(n)
     """
 
     # Tokenize lines
-    raw_lines = [ln for ln in (_strip_comment(l) for l in text.splitlines()) if ln.strip()]
+    raw_lines = [ln for ln in (_strip_comment(line) for line in text.splitlines()) if ln.strip()]
+
     root: Dict[str, Any] = {}
     stack: List[Tuple[int, Dict[str, Any]]] = [(0, root)]
 
@@ -97,7 +94,9 @@ def _parse_minimal_yaml(text: str) -> Dict[str, Any]:
                 if not nxt_stripped.startswith("-"):
                     break
                 item = nxt_stripped[1:].strip()
-                if (item.startswith(""") and item.endswith(""")) or (item.startswith("'") and item.endswith("'")):
+                if (item.startswith(""") and item.endswith(""")) or (
+                    item.startswith("'") and item.endswith("'")
+                ):
                     item = item[1:-1]
                 items.append(item)
                 j += 1
@@ -122,7 +121,9 @@ def _parse_minimal_yaml(text: str) -> Dict[str, Any]:
             continue
 
         # Trim quotes for simple values
-        if (rest.startswith("\"") and rest.endswith("\"")) or (rest.startswith("'") and rest.endswith("'")):
+        if (rest.startswith('"') and rest.endswith('"')) or (
+            rest.startswith("'") and rest.endswith("'")
+        ):
             val = rest[1:-1]
         else:
             val = rest
@@ -141,7 +142,9 @@ def _parse_minimal_yaml(text: str) -> Dict[str, Any]:
             if not nxt_stripped.startswith("-"):
                 break
             item = nxt_stripped[1:].strip()
-            if (item.startswith("\"") and item.endswith("\"")) or (item.startswith("'") and item.endswith("'")):
+            if (item.startswith('"') and item.endswith('"')) or (
+                item.startswith("'") and item.endswith("'")
+            ):
                 item = item[1:-1]
             items.append(item)
             i += 1
@@ -162,11 +165,7 @@ def _parse_json(text: str) -> Dict[str, Any]:
 
 
 def load_policy_pack(path: str) -> PolicyPack:
-    """Load a policy pack from YAML/JSON.
-
-    Time:  O(n)
-    Space: O(n)
-    """
+    """Load a policy pack from YAML/JSON."""
 
     p = Path(path)
     text = p.read_text(encoding="utf-8")
@@ -214,8 +213,6 @@ def resolve_policy_pack_path(
     Security notes:
     - Prevent path traversal by forcing resolution under base_dir.
 
-    Time:  O(1)
-    Space: O(1)
     """
 
     p = Path(pack)

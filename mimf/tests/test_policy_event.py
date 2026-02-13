@@ -1,5 +1,3 @@
-from datetime import datetime, UTC
-
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.events import PolicyEvaluationEvent
 
@@ -37,5 +35,3 @@ def test_policy_evaluation_event_payload_contains_required_fields():
     assert payload["plan_id"] == "plan-1"
     assert payload["target_object_id"] == "obj-1"
     assert payload["decision"] == "DENY"
-
-

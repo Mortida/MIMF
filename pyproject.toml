@@ -56,6 +56,7 @@ dev = [
     "httpx>=0.24",
     "pytest>=8,<9",
     "python-multipart>=0.0.22",
+    "ruff>=0.14.14",
     "starlette>=0.27",
 ]
 
@@ -71,3 +72,5 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+ignore = ["E501"]
+

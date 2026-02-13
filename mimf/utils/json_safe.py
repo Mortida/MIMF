@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import is_dataclass, asdict
+import base64
+from dataclasses import asdict, is_dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Mapping, Iterable
-import base64
+from typing import Any, Mapping
 
 
 def to_jsonable(obj: Any) -> Any:
@@ -15,8 +15,6 @@ def to_jsonable(obj: Any) -> Any:
     - bytes are base64-encoded to avoid binary injection / encoding issues.
     - does NOT execute or import anything dynamically.
 
-    Time complexity: O(N) over the size of the object graph traversed.
-    Space complexity: O(N) for the converted structure.
     """
     if obj is None or isinstance(obj, (str, int, float, bool)):
         return obj

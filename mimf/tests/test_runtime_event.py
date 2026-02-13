@@ -1,6 +1,7 @@
 import json
-import pytest
 from datetime import UTC
+
+import pytest
 
 from mimf.core.runtime.events import RuntimeEvent
 

@@ -40,6 +40,10 @@ keys/
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
 
 # Virtual environments
 .venv/
@@ -55,12 +59,10 @@ dist/
 *.egg-info/
 .eggs/
 wheels/
-pip-wheel-metadata/
 *.egg
 *.whl
 
 # Python tooling caches
-.pytest_cache/
 .coverage
 .coverage.*
 htmlcov/
@@ -70,11 +72,7 @@ pytestdebug.log
 
 .mypy_cache/
 .dmypy.json
-.pyre/
-.pytype/
 
-.ruff_cache/
-.pyre/
 .pyright/
 .pyrightcache/
 

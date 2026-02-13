@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 from uuid import uuid4
@@ -198,7 +198,7 @@ def append_custody_event(
     )
 
     # Write new entry.
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     ts = now.strftime("%Y%m%dT%H%M%SZ")
     entry_name = f"entry_{ts}_{uuid4().hex[:8]}.json"
     entry_rel = f"{CUSTODY_DIR}/{entry_name}"
@@ -323,7 +323,7 @@ def create_transfer_receipt(
     existing_entries: Dict[str, str] = {str(k): str(v) for k, v in entries.items()}
     existing_receipts: Dict[str, str] = {str(k): str(v) for k, v in receipts.items()}
 
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     ts = now.strftime("%Y%m%dT%H%M%SZ")
     receipt_name = f"receipt_{ts}_{uuid4().hex[:8]}.json"
     receipt_rel = f"{RECEIPTS_DIR}/{receipt_name}"
@@ -511,7 +511,7 @@ def accept_transfer_receipt(
     custody_merkle_root = _compute_custody_merkle(existing_entries, existing_receipts)
 
     base_bundle_id, base_merkle_root, _, base_manifest_sha256 = _load_manifest_base(root)
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
 
     addendum_payload: Dict[str, Any] = {
         "schema": _ADDENDUM_SCHEMA,

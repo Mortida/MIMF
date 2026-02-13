@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -16,7 +16,7 @@ def test_runtime_context_add_object_registers_and_prevents_duplicates():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     ctx.add_object(obj)
@@ -69,7 +69,7 @@ def test_runtime_context_get_objects_and_get_events_are_immutable_views():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
     ctx.add_object(obj)
 

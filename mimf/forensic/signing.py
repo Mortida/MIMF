@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -150,6 +150,6 @@ def signing_metadata(*, signer_id: Optional[str]) -> Mapping[str, Any]:
     return {
         "schema": {"name": "mimf.bundle_signature", "version": "1.0"},
         "algorithm": "Ed25519",
-        "signed_at": datetime.now(UTC).isoformat(),
+        "signed_at": datetime.now(timezone.utc).isoformat(),
         "signer_id": signer_id,
     }

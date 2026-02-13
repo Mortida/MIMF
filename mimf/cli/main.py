@@ -6,7 +6,7 @@ import os
 import shutil
 import sqlite3
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 
@@ -281,7 +281,7 @@ def cmd_inspect_file(args: argparse.Namespace) -> int:
     plugin = select_file_inspector(registry, path)
 
     context = RuntimeContext(
-        context_id=args.context_id or f"context-inspect-{int(datetime.now(UTC).timestamp())}",
+        context_id=args.context_id or f"context-inspect-{int(datetime.now(timezone.utc).timestamp())}",
         actor_id=args.actor_id,
         operation_name="CLI:inspect-file",
     )
@@ -349,7 +349,7 @@ def cmd_normalize_file(args: argparse.Namespace) -> int:
         return 2
 
     context = RuntimeContext(
-        context_id=args.context_id or f"context-normalize-{int(datetime.now(UTC).timestamp())}",
+        context_id=args.context_id or f"context-normalize-{int(datetime.now(timezone.utc).timestamp())}",
         actor_id=args.actor_id,
         operation_name="CLI:normalize-file",
     )
@@ -499,7 +499,7 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
     plugin = select_file_inspector(registry, path)
 
     context = RuntimeContext(
-        context_id=args.context_id or f"context-bundle-{int(datetime.now(UTC).timestamp())}",
+        context_id=args.context_id or f"context-bundle-{int(datetime.now(timezone.utc).timestamp())}",
         actor_id=args.actor_id,
         operation_name="CLI:export-bundle",
     )
@@ -525,7 +525,7 @@ def cmd_export_bundle(args: argparse.Namespace) -> int:
 
     out_dir = args.out
     if not out_dir:
-        out_dir = os.path.join(os.getcwd(), f"mimf_bundle_{int(datetime.now(UTC).timestamp())}")
+        out_dir = os.path.join(os.getcwd(), f"mimf_bundle_{int(datetime.now(timezone.utc).timestamp())}")
 
     # POLICY_PACK_OVERRIDES_EXPORT
     policy_pack = getattr(args, "policy_pack", None)

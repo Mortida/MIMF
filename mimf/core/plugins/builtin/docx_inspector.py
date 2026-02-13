@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import zipfile
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -50,7 +50,7 @@ _META = PluginMetadata(
     version="1.0.0",
     author="MIMF Core",
     allowed_actions=frozenset({"inspect"}),
-    created_at=datetime.now(UTC),
+    created_at=datetime.now(timezone.utc),
 )
 
 
@@ -135,7 +135,7 @@ class DocxFileInspector(FileInspectorPlugin):
                 "docx": docx_meta,
             },
             origin="inspector:builtin.docx_inspector",
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
         )
 
     def _extract_docx_metadata(self, path: str) -> Dict[str, Any]:

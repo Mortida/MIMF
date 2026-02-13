@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from .context import RuntimeContext
@@ -34,7 +34,7 @@ class DefaultMutationExecutor(MutationExecutor):
                 origin=obj.origin,
                 metadata=new_metadata,
                 labels=obj.labels,
-                created_at=datetime.now(UTC),
+                created_at=datetime.now(timezone.utc),
             )
 
         return RuntimeObject(
@@ -44,7 +44,7 @@ class DefaultMutationExecutor(MutationExecutor):
             snapshot_hash=getattr(obj, "snapshot_hash", ""),
             metadata=new_metadata,
             labels=obj.labels,
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
         )
 
     def execute(

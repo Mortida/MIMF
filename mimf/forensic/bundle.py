@@ -6,7 +6,7 @@ import platform
 import shutil
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -132,7 +132,7 @@ def _pdf_date_to_iso(value: Optional[str]) -> Optional[str]:
             int(core[8:10]),
             int(core[10:12]),
             int(core[12:14]),
-            tzinfo=UTC,
+            tzinfo=timezone.utc,
         )
     except ValueError:
         return value
@@ -501,7 +501,7 @@ def build_forensic_bundle(
     manifest = {
         "schema": _BUNDLE_SCHEMA,
         "bundle_id": bundle_id,
-        "created_at": datetime.now(UTC).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "input": {
             "filename": _safe_basename(str(in_path)),
             "size_bytes": in_path.stat().st_size,

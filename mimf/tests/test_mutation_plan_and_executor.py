@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -28,7 +28,7 @@ def test_validate_rejects_target_mismatch():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     plan = MutationPlan(
@@ -37,7 +37,7 @@ def test_validate_rejects_target_mismatch():
         mutation_type="UPDATE",
         changes={"a": 2},
         allowed_labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     with pytest.raises(RuntimeError):
@@ -51,7 +51,7 @@ def test_validate_rejects_label_violation():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"restricted"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     plan = MutationPlan(
@@ -60,7 +60,7 @@ def test_validate_rejects_label_violation():
         mutation_type="UPDATE",
         changes={"a": 2},
         allowed_labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     with pytest.raises(RuntimeError):
@@ -76,7 +76,7 @@ def test_executor_emits_events_and_returns_new_object():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     plan = MutationPlan(
@@ -85,7 +85,7 @@ def test_executor_emits_events_and_returns_new_object():
         mutation_type="NOOP",
         changes={},
         allowed_labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     ex = _NoopExecutor()

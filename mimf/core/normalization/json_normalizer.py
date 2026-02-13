@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Mapping, Optional
 
 from mimf.core.runtime.mutation import MutationPlan
@@ -72,7 +72,7 @@ def build_json_normalization_plan(
     """Build a MutationPlan that attaches normalized JSON metadata."""
 
     res = normalize_json_metadata(obj)
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
 
     return MutationPlan(
         plan_id=plan_id or f"normalize-json-{int(now.timestamp())}",

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -17,7 +17,7 @@ def _make_obj(labels=frozenset({"safe"})) -> RuntimeObject:
         origin={"source": "test"},
         metadata={"a": 1},
         labels=labels,
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
 
@@ -28,7 +28,7 @@ def _make_plan() -> MutationPlan:
         mutation_type="UPDATE",
         changes={"a": 2},
         allowed_labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
 

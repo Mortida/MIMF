@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -57,7 +57,7 @@ class JsonFileInspector(FileInspectorPlugin):
             version="0.2",
             author="MIMF",
             allowed_actions=frozenset({"inspect_file"}),
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
         )
 
     @property
@@ -170,7 +170,7 @@ class JsonFileInspector(FileInspectorPlugin):
         else:
             summary["note"] = f"file too large to parse (>{self.max_bytes_for_parse} bytes)"
 
-        created_at = datetime.now(UTC)
+        created_at = datetime.now(timezone.utc)
 
         return RuntimeObject.create(
             object_id=object_id or f"file:{abs_path}",

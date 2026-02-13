@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 import pytest
 
@@ -41,13 +41,13 @@ def test_event_query_time_range_filters_by_created_at():
 
     e1 = RuntimeEvent()
     e2 = RuntimeEvent()
-    object.__setattr__(e1, "created_at", datetime.now(UTC) - timedelta(seconds=10))
-    object.__setattr__(e2, "created_at", datetime.now(UTC))
+    object.__setattr__(e1, "created_at", datetime.now(timezone.utc) - timedelta(seconds=10))
+    object.__setattr__(e2, "created_at", datetime.now(timezone.utc))
 
     ctx.emit_event(e1)
     ctx.emit_event(e2)
 
-    start = datetime.now(UTC) - timedelta(seconds=5)
+    start = datetime.now(timezone.utc) - timedelta(seconds=5)
     out = EventQuery.time_range(ctx.get_events(), start=start)
     assert len(out) == 1
     assert out[0].event_id == e2.event_id

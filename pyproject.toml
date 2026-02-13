@@ -13,9 +13,6 @@ exclude = ["source*", "policy_packs*", "tests*", "docs*", "scripts*"]
 [tool.setuptools.package-data]
 mimf = ["../policy_packs/*.yaml", "../policy_packs/*.yml"]
 
-
-
-
 [project]
 name = "mimf"
 version = "0.2.0"
@@ -27,44 +24,47 @@ license-files = ["LICENSE"]
 authors = [{ name = "MIMF" }]
 
 dependencies = [
-    "cryptography>=46.0.3",
-    "defusedxml>=0.7.1",
-    "pyyaml>=6.0.3",
-    "uvicorn>=0.40.0",
+  # SECURITY: CVE-2026-26007 is fixed in cryptography 46.0.5+
+  "cryptography>=46.0.5",
+  "defusedxml>=0.7.1",
+  "pyyaml>=6.0.3",
 ]
-
 
 [project.optional-dependencies]
-dev = [
-  "pytest>=7.0",
-  "ruff>=0.4",
-]
-
+# Runtime API extras (only if you run the FastAPI server)
 api = [
   "fastapi>=0.110",
+  "starlette>=0.27",
   "uvicorn>=0.27",
   "python-multipart>=0.0.9",
 ]
 
+# Test deps (what CI should install to run pytest successfully)
+test = [
+  "pytest>=8,<9",
+  "httpx>=0.24",
+  "fastapi>=0.110",
+  "starlette>=0.27",
+  "python-multipart>=0.0.9",
+]
+
+# Developer conveniences (lint + tests)
+dev = [
+  "ruff>=0.4",
+  "pytest>=8,<9",
+  "httpx>=0.24",
+  "fastapi>=0.110",
+  "starlette>=0.27",
+  "python-multipart>=0.0.9",
+  "uvicorn>=0.27",
+]
 
 [project.scripts]
 mimf = "mimf.cli.main:main"
 
-[dependency-groups]
-dev = [
-    "fastapi>=0.128.0",
-    "httpx>=0.24",
-    "pytest>=8,<9",
-    "python-multipart>=0.0.22",
-    "ruff>=0.14.14",
-    "starlette>=0.27",
-]
-
-
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["mimf/tests"]
-
 
 [tool.ruff]
 line-length = 100
@@ -73,4 +73,3 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501"]
-

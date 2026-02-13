@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from mimf.core.runtime.context import RuntimeContext
 from mimf.core.runtime.dry_run_executor import DryRunExecutor
@@ -16,7 +16,7 @@ def test_dry_run_executor_emits_execution_events_adds_object_and_preserves_integ
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     plan = MutationPlan(
@@ -25,7 +25,7 @@ def test_dry_run_executor_emits_execution_events_adds_object_and_preserves_integ
         mutation_type="UPDATE",
         changes={"a": 2},
         allowed_labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     ex = DryRunExecutor()

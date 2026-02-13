@@ -13,7 +13,7 @@ def _parse_dt(s: str) -> Optional[datetime]:
     if not isinstance(s, str) or not s.strip():
         return None
     try:
-        # Most of the project uses datetime.now(UTC).isoformat() -> has offset.
+        # Most of the project uses datetime.now(timezone.utc).isoformat() -> has offset.
         return datetime.fromisoformat(s)
     except Exception:
         return None

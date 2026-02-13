@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -17,7 +17,7 @@ def test_replay_into_new_context_produces_valid_chain_and_same_event_count():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     src.emit_event(RuntimeEvent())

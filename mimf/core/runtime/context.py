@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from threading import Lock
 from types import MappingProxyType
 from typing import Dict, List, Mapping, Optional, Tuple
@@ -33,7 +33,7 @@ class RuntimeContext:
     """
 
     context_id: str
-    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     actor_id: Optional[str] = None
     parent_context_id: Optional[str] = None
     operation_name: Optional[str] = None

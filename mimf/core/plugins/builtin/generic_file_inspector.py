@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Dict
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -66,7 +66,7 @@ class GenericFileInspector(FileInspectorPlugin):
             version="0.2",
             author="MIMF",
             allowed_actions=frozenset({"inspect_file"}),
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
         )
 
     @property
@@ -119,7 +119,7 @@ class GenericFileInspector(FileInspectorPlugin):
         ext = os.path.splitext(abs_path)[1].lower()
         is_binary = _is_probably_binary(abs_path)
 
-        created_at = datetime.now(UTC)
+        created_at = datetime.now(timezone.utc)
 
         origin: Dict[str, str] = {"scheme": "file", "path": abs_path}
 
@@ -134,8 +134,8 @@ class GenericFileInspector(FileInspectorPlugin):
                 "extension": ext,
                 "is_probably_binary": is_binary,
                 "stat": {
-                    "mtime": datetime.fromtimestamp(st.st_mtime, tz=UTC),
-                    "ctime": datetime.fromtimestamp(st.st_ctime, tz=UTC),
+                    "mtime": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc),
+                    "ctime": datetime.fromtimestamp(st.st_ctime, tz=timezone.utc),
                 },
             },
             labels=frozenset({"UNTRUSTED"}),

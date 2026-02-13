@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from mimf.core.runtime.context import RuntimeContext
@@ -20,7 +20,7 @@ def test_sqlite_store_roundtrip(tmp_path: Path) -> None:
         origin={"path": "/tmp/example"},
         metadata={"a": 1, "b": "x"},
         labels=frozenset({"PUBLIC"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
     ctx.add_object(obj)
 

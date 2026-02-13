@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -17,7 +17,7 @@ def test_inspector_emits_inspection_event_and_chain_is_valid():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     event = Inspector.inspect(obj, ctx)
@@ -47,7 +47,7 @@ def test_inspector_rejects_invalid_inputs():
         origin={"source": "test"},
         metadata={"a": 1},
         labels=frozenset({"safe"}),
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
 
     with pytest.raises(TypeError):

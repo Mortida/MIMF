@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Mapping, Optional
 
 from mimf.core.plugins.file_info import FileInfo
@@ -97,7 +97,7 @@ def build_generic_normalization_plan(
     """Build a MutationPlan that attaches normalized generic metadata."""
 
     res = normalize_generic_metadata(obj, info)
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
 
     return MutationPlan(
         plan_id=plan_id or f"normalize-generic-{int(now.timestamp())}",

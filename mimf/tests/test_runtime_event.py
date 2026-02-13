@@ -1,5 +1,5 @@
 import json
-from datetime import UTC
+from datetime import timezone
 
 import pytest
 
@@ -9,7 +9,7 @@ from mimf.core.runtime.events import RuntimeEvent
 def test_runtime_event_has_identity_and_utc_timestamp():
     evt = RuntimeEvent()
     assert evt.event_id is not None
-    assert evt.created_at.tzinfo is UTC
+    assert evt.created_at.tzinfo == timezone.utc
 
 
 def test_runtime_event_is_immutable():

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID, uuid4
 
@@ -45,7 +45,7 @@ class RuntimeEvent:
     """
 
     event_id: UUID = field(default_factory=uuid4, init=False)
-    created_at: datetime = field(default_factory=lambda: datetime.now(UTC), init=False)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc), init=False)
 
     previous_event_hash: Optional[str] = field(default=None, init=False)
     event_hash: Optional[str] = field(default=None, init=False)

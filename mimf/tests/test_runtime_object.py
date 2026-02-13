@@ -1,10 +1,10 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from mimf.core.runtime.object import RuntimeObject
 
 
 def test_runtime_object_is_immutable_and_defensively_copied():
-    created_at = datetime(2026, 1, 1, tzinfo=UTC)
+    created_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
     origin = {"source": "unit-test"}
     metadata = {"k": {"nested": 1}}
     labels = frozenset({"safe", "test"})
@@ -30,7 +30,7 @@ def test_runtime_object_is_immutable_and_defensively_copied():
 
 
 def test_runtime_object_snapshot_hash_is_deterministic():
-    created_at = datetime(2026, 1, 1, tzinfo=UTC)
+    created_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
     obj1 = RuntimeObject.create(
         object_id="obj-1",
@@ -54,7 +54,7 @@ def test_runtime_object_snapshot_hash_is_deterministic():
 
 
 def test_runtime_object_snapshot_hash_changes_when_content_changes():
-    created_at = datetime(2026, 1, 1, tzinfo=UTC)
+    created_at = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
     obj1 = RuntimeObject.create(
         object_id="obj-1",

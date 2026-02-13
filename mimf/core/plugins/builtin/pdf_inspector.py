@@ -4,7 +4,7 @@ import hashlib
 import os
 import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Tuple
 
 from mimf.core.plugins.capabilities import FileInspectorCapabilities
@@ -602,7 +602,7 @@ class PdfFileInspector(FileInspectorPlugin):
             version="0.3",
             author="MIMF",
             allowed_actions=frozenset({"inspect_file"}),
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(timezone.utc),
         )
 
     @property
@@ -718,7 +718,7 @@ class PdfFileInspector(FileInspectorPlugin):
 
         sha256 = _sha256_file(abs_path)
 
-        created_at = datetime.now(UTC)
+        created_at = datetime.now(timezone.utc)
 
         pdf_meta: Dict[str, Any] = {
             "magic_ok": bool(magic_ok),
@@ -745,8 +745,8 @@ class PdfFileInspector(FileInspectorPlugin):
                 "sha256": sha256,
                 "pdf": pdf_meta,
                 "stat": {
-                    "mtime": datetime.fromtimestamp(st.st_mtime, tz=UTC),
-                    "ctime": datetime.fromtimestamp(st.st_ctime, tz=UTC),
+                    "mtime": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc),
+                    "ctime": datetime.fromtimestamp(st.st_ctime, tz=timezone.utc),
                 },
             },
             labels=frozenset({"UNTRUSTED"}),
